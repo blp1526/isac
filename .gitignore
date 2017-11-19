@@ -1,0 +1,22 @@
+tmp/
+dist/
+vendor/
+
+### https://raw.github.com/github/gitignore/af988f5c1ed081c88e1d4d33945bb2f14d9a9d4e/Go.gitignore
+
+# Binaries for programs and plugins
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Test binary, build with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+# Project-local glide cache, RE: https://github.com/Masterminds/glide/issues/736
+.glide/
+
+
