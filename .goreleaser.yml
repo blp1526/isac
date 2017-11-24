@@ -1,0 +1,16 @@
+builds:
+  - binary: isac
+    goos:
+      - linux
+      - darwin
+    goarch:
+      - amd64
+    main: main.go
+
+archive:
+  format: tar.gz
+
+release:
+  github:
+    owner: blp1526
+    name: isac

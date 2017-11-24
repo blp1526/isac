@@ -1,5 +1,5 @@
 .PHONY: all
-all: test
+all: snapshot
 
 .PHONY: vet
 vet:
@@ -9,4 +9,9 @@ vet:
 .PHONY: test
 test: vet
 	go test -v --cover ./...
+	@echo
+
+.PHONY: snapshot
+snapshot: test
+	goreleaser --rm-dist --snapshot
 	@echo
