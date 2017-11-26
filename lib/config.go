@@ -10,10 +10,10 @@ type Config struct {
 	AccessTokenSecret string `json:"AccessTokenSecret,omitempty"`
 }
 
-func loadConfig(path string) (config *Config, err error) {
+func NewConfig(configPath string) (config *Config, err error) {
 	config = &Config{}
 
-	b, err := ioutil.ReadFile(path)
+	b, err := ioutil.ReadFile(configPath)
 	if err != nil {
 		return config, err
 	}
