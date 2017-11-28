@@ -1,9 +1,12 @@
 package isac
 
 import (
+	"encoding/json"
+	"fmt"
 	"strings"
 
-	"github.com/blp1526/isac/lib/server"
+	"github.com/blp1526/isac/lib/api"
+	"github.com/blp1526/isac/lib/resource"
 	"github.com/sirupsen/logrus"
 )
 
@@ -44,11 +47,23 @@ func (i *Isac) Run() (err error) {
 	i.logger.Debugf("AccessToken: %s", config.AccessToken)
 	i.logger.Debugf("AccessTokenSecret: %s", config.AccessTokenSecret)
 
-	servers, err := server.All(i.zones)
+	client := api.NewClient(config.AccessToken, config.AccessTokenSecret)
+	statusCode, respBody, err := client.Request("GET", "tk1a", "server", "", nil)
 	if err != nil {
 		return err
 	}
 
-	i.logger.Debugf("servers: %v", servers)
+	if statusCode != 200 {
+		return fmt.Errorf("statusCode: %v", statusCode)
+	}
+
+	serverCollection := &resource.ServerCollection{}
+	err = json.Unmarshal(respBody, serverCollection)
+	if err != nil {
+		return err
+	}
+
+	i.logger.Debugf("serverCollection.Count: %v", serverCollection.Count)
+
 	return nil
 }
