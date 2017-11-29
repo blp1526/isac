@@ -6,7 +6,8 @@ import (
 	"strings"
 
 	"github.com/blp1526/isac/lib/api"
-	"github.com/blp1526/isac/lib/resource"
+	"github.com/blp1526/isac/lib/config"
+	"github.com/blp1526/isac/lib/resource/server"
 	"github.com/sirupsen/logrus"
 )
 
@@ -39,16 +40,16 @@ func (i *Isac) Run() (err error) {
 	i.logger.Debugf("configPath: %s", i.configPath)
 	i.logger.Debugf("zones: %v", i.zones)
 
-	config, err := NewConfig(i.configPath)
+	c, err := config.New(i.configPath)
 	if err != nil {
 		return err
 	}
 
-	i.logger.Debugf("AccessToken: %s", config.AccessToken)
-	i.logger.Debugf("AccessTokenSecret: %s", config.AccessTokenSecret)
+	i.logger.Debugf("AccessToken: %s", c.AccessToken)
+	i.logger.Debugf("AccessTokenSecret: %s", c.AccessTokenSecret)
 
-	client := api.NewClient(config.AccessToken, config.AccessTokenSecret)
-	statusCode, respBody, err := client.Request("GET", "tk1a", "server", "", nil)
+	ac := api.NewClient(c.AccessToken, c.AccessTokenSecret)
+	statusCode, respBody, err := ac.Request("GET", "tk1a", "server", "", nil)
 	if err != nil {
 		return err
 	}
@@ -57,13 +58,17 @@ func (i *Isac) Run() (err error) {
 		return fmt.Errorf("statusCode: %v", statusCode)
 	}
 
-	serverCollection := &resource.ServerCollection{}
-	err = json.Unmarshal(respBody, serverCollection)
+	sc := server.NewCollection()
+	err = json.Unmarshal(respBody, sc)
 	if err != nil {
 		return err
 	}
 
-	i.logger.Debugf("serverCollection.Count: %v", serverCollection.Count)
+	i.logger.Debugf("sc.Count: %v", sc.Count)
+
+	for _, s := range sc.Servers {
+		i.logger.Debugf("s: %v", s)
+	}
 
 	return nil
 }
