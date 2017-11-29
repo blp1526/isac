@@ -1,4 +1,4 @@
-package isac
+package config
 
 import (
 	"encoding/json"
@@ -10,7 +10,7 @@ type Config struct {
 	AccessTokenSecret string `json:"AccessTokenSecret,omitempty"`
 }
 
-func NewConfig(configPath string) (config *Config, err error) {
+func New(configPath string) (config *Config, err error) {
 	config = &Config{}
 
 	b, err := ioutil.ReadFile(configPath)
