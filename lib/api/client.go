@@ -21,11 +21,16 @@ func NewClient(accessToken string, accessTokenSecret string) *Client {
 	return client
 }
 
-func (client *Client) Request(method string, zone string, resource string, id string, params []byte) (statusCode int, respBody []byte, err error) {
+func (client *Client) url(zone string, resource string, id string) (url string) {
 	scheme := "https://"
 	domain := "secure.sakura.ad.jp"
 	path := "/" + path.Join("cloud", "zone", zone, "api", "cloud", "1.1", resource, id)
-	url := scheme + domain + path
+	url = scheme + domain + path
+	return url
+}
+
+func (client *Client) Request(method string, zone string, resource string, id string, params []byte) (statusCode int, respBody []byte, err error) {
+	url := client.url(zone, resource, id)
 
 	req, err := http.NewRequest(method, url, bytes.NewBuffer(params))
 	if err != nil {
