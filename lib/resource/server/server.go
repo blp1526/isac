@@ -1,5 +1,7 @@
 package server
 
+import "fmt"
+
 type ServerCollection struct {
 	Count   int      `json:"Count,omitempty"`
 	Servers []Server `json:"Servers,omitempty"`
@@ -28,4 +30,9 @@ func NewCollection() *ServerCollection {
 func New() *Server {
 	s := &Server{}
 	return s
+}
+
+func (s *Server) String() string {
+	status := fmt.Sprintf("%8v", s.Instance.Status)
+	return fmt.Sprintf("%s %s %s %s", s.Zone.Name, s.ID, status, s.Name)
 }
