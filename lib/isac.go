@@ -49,25 +49,34 @@ func (i *Isac) Run() (err error) {
 	i.logger.Debugf("AccessTokenSecret: %s", c.AccessTokenSecret)
 
 	ac := api.NewClient(c.AccessToken, c.AccessTokenSecret)
-	statusCode, respBody, err := ac.Request("GET", "tk1a", "server", "", nil)
-	if err != nil {
-		return err
+
+	servers := []server.Server{}
+	for _, zone := range i.zones {
+		statusCode, respBody, err := ac.Request("GET", zone, "server", "", nil)
+		if err != nil {
+			return err
+		}
+
+		if statusCode != 200 {
+			return fmt.Errorf("statusCode: %v", statusCode)
+		}
+
+		sc := server.NewCollection()
+		err = json.Unmarshal(respBody, sc)
+		if err != nil {
+			return err
+		}
+
+		i.logger.Debugf("sc.Count: %v", sc.Count)
+
+		for _, s := range sc.Servers {
+			servers = append(servers, s)
+		}
+
 	}
 
-	if statusCode != 200 {
-		return fmt.Errorf("statusCode: %v", statusCode)
-	}
-
-	sc := server.NewCollection()
-	err = json.Unmarshal(respBody, sc)
-	if err != nil {
-		return err
-	}
-
-	i.logger.Debugf("sc.Count: %v", sc.Count)
-
-	for _, s := range sc.Servers {
-		i.logger.Debugf("s: %v", s)
+	for _, server := range servers {
+		i.logger.Debugf("server: %+v", server)
 	}
 
 	return nil
