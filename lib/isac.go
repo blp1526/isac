@@ -68,7 +68,6 @@ func (i *Isac) Run() (err error) {
 	i.row.Current = len(i.row.Headers())
 
 	defer termbox.Close()
-
 	i.draw()
 
 MAINLOOP:
@@ -120,7 +119,7 @@ func (i *Isac) draw() {
 	offsetSize = offsetSize + 1
 
 	for index, server := range i.servers {
-		i.setLine(index+offsetSize, server.String(i.showServerID))
+		i.setLine(index+offsetSize, server.String(index+1, i.showServerID))
 	}
 	i.row.MovableBottom = len(i.servers) + 1
 
