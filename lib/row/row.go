@@ -3,9 +3,9 @@ package row
 import "fmt"
 
 type Row struct {
-	movableTop    int
-	movableBottom int
-	current       int
+	MovableTop    int
+	MovableBottom int
+	Current       int
 }
 
 func New() *Row {
@@ -18,8 +18,12 @@ func (r *Row) Headers() (headers []string) {
 
 	headers = []string{
 		fmt.Sprintf("Zone %s Status Name", id),
-		"=============================",
 	}
 
 	return headers
+}
+
+func (r *Row) Separator() (separator string) {
+	separator = "============================="
+	return separator
 }

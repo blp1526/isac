@@ -22,7 +22,7 @@ type Zone struct {
 	Name string `json:"Name,omitempty"`
 }
 
-func NewCollection() *ServerCollection {
+func NewCollection(zone string) *ServerCollection {
 	s := &ServerCollection{}
 	return s
 }
