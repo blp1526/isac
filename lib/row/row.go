@@ -14,10 +14,11 @@ func New() *Row {
 }
 
 func (r *Row) Headers() (headers []string) {
+	no := fmt.Sprintf("%-3v", "No")
 	id := fmt.Sprintf("%-12v", "ID")
 
 	headers = []string{
-		fmt.Sprintf("Zone %s Status Name", id),
+		fmt.Sprintf("%s Zone %s Status Name", no, id),
 	}
 
 	return headers

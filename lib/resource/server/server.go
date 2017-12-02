@@ -1,6 +1,8 @@
 package server
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type ServerCollection struct {
 	Count   int      `json:"Count,omitempty"`
@@ -32,11 +34,12 @@ func New() *Server {
 	return s
 }
 
-func (s *Server) String(showServerID bool) string {
+func (s *Server) String(no int, showServerID bool) string {
 	id := "************"
 	if showServerID {
 		id = s.ID
 	}
+
 	status := fmt.Sprintf("%6v", s.Instance.Status)
-	return fmt.Sprintf("%s %s %s %s", s.Zone.Name, id, status, s.Name)
+	return fmt.Sprintf("%-3v %s %s %s %s", no, s.Zone.Name, id, status, s.Name)
 }
