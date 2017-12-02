@@ -32,7 +32,11 @@ func New() *Server {
 	return s
 }
 
-func (s *Server) String() string {
-	status := fmt.Sprintf("%8v", s.Instance.Status)
-	return fmt.Sprintf("%s %s %s %s", s.Zone.Name, s.ID, status, s.Name)
+func (s *Server) String(showServerID bool) string {
+	id := "************"
+	if showServerID {
+		id = s.ID
+	}
+	status := fmt.Sprintf("%6v", s.Instance.Status)
+	return fmt.Sprintf("%s %s %s %s", s.Zone.Name, id, status, s.Name)
 }

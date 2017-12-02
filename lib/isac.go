@@ -15,15 +15,16 @@ import (
 )
 
 type Isac struct {
-	client  *api.Client
-	config  *config.Config
-	logger  *logrus.Logger
-	row     *row.Row
-	servers []server.Server
-	zones   []string
+	client       *api.Client
+	config       *config.Config
+	showServerID bool
+	logger       *logrus.Logger
+	row          *row.Row
+	servers      []server.Server
+	zones        []string
 }
 
-func New(configPath string, verbose bool, zones string) (i *Isac, err error) {
+func New(configPath string, showServerID bool, verbose bool, zones string) (i *Isac, err error) {
 	config, err := config.New(configPath)
 	if err != nil {
 		return i, err
@@ -43,11 +44,12 @@ func New(configPath string, verbose bool, zones string) (i *Isac, err error) {
 	}
 
 	i = &Isac{
-		client: client,
-		config: config,
-		logger: logger,
-		row:    row,
-		zones:  strings.Split(zones, ","),
+		client:       client,
+		config:       config,
+		showServerID: showServerID,
+		logger:       logger,
+		row:          row,
+		zones:        strings.Split(zones, ","),
 	}
 	return i, nil
 }
@@ -97,8 +99,13 @@ func (i *Isac) draw() {
 	const coldef = termbox.ColorDefault
 	termbox.Clear(coldef, coldef)
 
+	for index, header := range i.row.Headers() {
+		i.setLine(index, header)
+	}
+
+	offsetSize := len(i.row.Headers())
 	for index, server := range i.servers {
-		i.setLine(index, server.String())
+		i.setLine(index+offsetSize, server.String(i.showServerID))
 	}
 	termbox.Flush()
 }

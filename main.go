@@ -12,6 +12,7 @@ import (
 const ExitCodeNG = 1
 
 var configPath string
+var showServerID bool
 var verbose bool
 var version string
 var zones string
@@ -37,6 +38,12 @@ func main() {
 		},
 
 		cli.BoolFlag{
+			Name:        "show-server-id",
+			Usage:       "Show server id.",
+			Destination: &showServerID,
+		},
+
+		cli.BoolFlag{
 			Name:        "verbose",
 			Usage:       "Print debug log.",
 			Destination: &verbose,
@@ -51,7 +58,7 @@ func main() {
 	}
 
 	app.Action = func(c *cli.Context) (err error) {
-		i, err := isac.New(configPath, verbose, zones)
+		i, err := isac.New(configPath, showServerID, verbose, zones)
 		if err != nil {
 			return cli.NewExitError(fmt.Sprintf("%s", err), ExitCodeNG)
 		}

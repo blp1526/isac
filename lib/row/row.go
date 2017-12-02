@@ -1,19 +1,25 @@
 package row
 
+import "fmt"
+
 type Row struct {
-	header        int
-	separator     int
 	movableTop    int
-	current       int
 	movableBottom int
+	current       int
 }
 
 func New() *Row {
-	r := &Row{
-		header:     0,
-		separator:  1,
-		movableTop: 2,
-		current:    2,
-	}
+	r := &Row{}
 	return r
+}
+
+func (r *Row) Headers() (headers []string) {
+	id := fmt.Sprintf("%-12v", "ID")
+
+	headers = []string{
+		fmt.Sprintf("Zone %s Status Name", id),
+		"=============================",
+	}
+
+	return headers
 }
