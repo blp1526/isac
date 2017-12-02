@@ -65,6 +65,8 @@ func (i *Isac) Run() (err error) {
 		return err
 	}
 
+	i.row.Current = len(i.row.Headers())
+
 	defer termbox.Close()
 
 	i.draw()
@@ -77,6 +79,10 @@ MAINLOOP:
 			switch ev.Key {
 			case termbox.KeyEsc, termbox.KeyCtrlC:
 				break MAINLOOP
+			case termbox.KeyArrowUp, termbox.KeyCtrlP:
+				i.currentRowUp()
+			case termbox.KeyArrowDown, termbox.KeyCtrlN:
+				i.currentRowDown()
 			}
 		default:
 			i.draw()
@@ -90,6 +96,10 @@ func (i *Isac) setLine(y int, line string) {
 	x := 0
 	for _, r := range runes {
 		bgColor := termbox.ColorDefault
+		if i.row.Current == y {
+			bgColor = termbox.ColorYellow
+		}
+
 		termbox.SetCell(x, y, r, termbox.ColorWhite, bgColor)
 		x += runewidth.RuneWidth(r)
 	}
@@ -104,10 +114,33 @@ func (i *Isac) draw() {
 	}
 
 	offsetSize := len(i.row.Headers())
+	i.row.MovableTop = len(i.row.Headers())
+
+	i.setLine(offsetSize, i.row.Separator())
+	offsetSize = offsetSize + 1
+
 	for index, server := range i.servers {
 		i.setLine(index+offsetSize, server.String(i.showServerID))
 	}
+	i.row.MovableBottom = len(i.servers) + 1
+
 	termbox.Flush()
+}
+
+func (i *Isac) currentRowUp() {
+	if i.row.Current > i.row.MovableTop {
+		i.row.Current -= 1
+	}
+
+	i.draw()
+}
+
+func (i *Isac) currentRowDown() {
+	if i.row.Current < i.row.MovableBottom {
+		i.row.Current += 1
+	}
+
+	i.draw()
 }
 
 func (i *Isac) reloadServers() (err error) {
@@ -121,13 +154,11 @@ func (i *Isac) reloadServers() (err error) {
 			return fmt.Errorf("statusCode: %v", statusCode)
 		}
 
-		sc := server.NewCollection()
+		sc := server.NewCollection(zone)
 		err = json.Unmarshal(respBody, sc)
 		if err != nil {
 			return err
 		}
-
-		i.logger.Debugf("zone: %v, Servers.Count: %v", zone, sc.Count)
 
 		for _, s := range sc.Servers {
 			i.servers = append(i.servers, s)
