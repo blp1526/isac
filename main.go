@@ -9,6 +9,8 @@ import (
 	"github.com/urfave/cli"
 )
 
+const ExitCodeNG = 1
+
 var configPath string
 var verbose bool
 var version string
@@ -48,13 +50,17 @@ func main() {
 		},
 	}
 
-	app.Action = func(c *cli.Context) error {
-		i := isac.New(configPath, verbose, zones)
-
-		err := i.Run()
+	app.Action = func(c *cli.Context) (err error) {
+		i, err := isac.New(configPath, verbose, zones)
 		if err != nil {
-			return cli.NewExitError(fmt.Sprintf("%s", err), 1)
+			return cli.NewExitError(fmt.Sprintf("%s", err), ExitCodeNG)
 		}
+
+		err = i.Run()
+		if err != nil {
+			return cli.NewExitError(fmt.Sprintf("%s", err), ExitCodeNG)
+		}
+
 		return nil
 	}
 	app.Run(os.Args)
