@@ -82,6 +82,9 @@ MAINLOOP:
 				i.currentRowUp()
 			case termbox.KeyArrowDown, termbox.KeyCtrlN:
 				i.currentRowDown()
+			case termbox.KeyEnter:
+				// FIXME:
+				i.currentRowDown()
 			}
 		default:
 			i.draw()
@@ -94,12 +97,15 @@ func (i *Isac) setLine(y int, line string) {
 	runes := []rune(line)
 	x := 0
 	for _, r := range runes {
+		fgColor := termbox.ColorDefault
 		bgColor := termbox.ColorDefault
+
 		if i.row.Current == y {
+			fgColor = termbox.ColorBlack
 			bgColor = termbox.ColorYellow
 		}
 
-		termbox.SetCell(x, y, r, termbox.ColorWhite, bgColor)
+		termbox.SetCell(x, y, r, fgColor, bgColor)
 		x += runewidth.RuneWidth(r)
 	}
 }
