@@ -66,9 +66,8 @@ func (i *Isac) Run() (err error) {
 		return err
 	}
 
-	i.row.Current = len(i.row.Headers())
 	defer termbox.Close()
-	i.draw()
+	i.draw("OK")
 
 MAINLOOP:
 	for {
@@ -82,12 +81,9 @@ MAINLOOP:
 				i.currentRowUp()
 			case termbox.KeyArrowDown, termbox.KeyCtrlN:
 				i.currentRowDown()
-			case termbox.KeyEnter:
-				// FIXME:
-				i.currentRowDown()
 			}
 		default:
-			i.draw()
+			i.draw("OK")
 		}
 	}
 	return nil
@@ -110,23 +106,29 @@ func (i *Isac) setLine(y int, line string) {
 	}
 }
 
-func (i *Isac) draw() {
+func (i *Isac) draw(status string) {
 	const coldef = termbox.ColorDefault
 	termbox.Clear(coldef, coldef)
 
-	for index, header := range i.row.Headers() {
+	headers := i.row.Headers(status)
+
+	if i.row.Current == 0 {
+		i.row.Current = len(headers)
+	}
+
+	for index, header := range headers {
 		i.setLine(index, header)
 	}
 
-	offsetSize := len(i.row.Headers())
-	i.row.MovableTop = len(i.row.Headers())
+	offsetSize := len(headers)
+	i.row.MovableTop = len(headers)
 
 	for index, server := range i.servers {
 		no := index + 1
 		server.No = no
 		i.setLine(index+offsetSize, server.String(i.showServerID))
 	}
-	i.row.MovableBottom = len(i.servers)
+	i.row.MovableBottom = len(i.servers) + len(headers) - 1
 
 	termbox.Flush()
 }
@@ -136,7 +138,7 @@ func (i *Isac) currentRowUp() {
 		i.row.Current -= 1
 	}
 
-	i.draw()
+	i.draw("OK")
 }
 
 func (i *Isac) currentRowDown() {
@@ -144,7 +146,7 @@ func (i *Isac) currentRowDown() {
 		i.row.Current += 1
 	}
 
-	i.draw()
+	i.draw("OK")
 }
 
 func (i *Isac) reloadServers() (err error) {
