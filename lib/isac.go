@@ -21,8 +21,10 @@ type Isac struct {
 	showServerID bool
 	logger       *logrus.Logger
 	row          *row.Row
-	servers      []server.Server
-	zones        []string
+	// FIXME: wastful
+	serverByCurrentRow map[int]server.Server
+	servers            []server.Server
+	zones              []string
 }
 
 func New(configPath string, showServerID bool, verbose bool, zones string) (i *Isac, err error) {
@@ -82,7 +84,8 @@ MAINLOOP:
 			case termbox.KeyArrowDown, termbox.KeyCtrlN:
 				i.currentRowDown()
 			case termbox.KeyCtrlU:
-				i.currentServerUp()
+				status := i.currentServerUp()
+				i.draw(status)
 			case termbox.KeyCtrlR:
 				i.refresh()
 			}
@@ -114,20 +117,22 @@ func (i *Isac) draw(status string) {
 	const coldef = termbox.ColorDefault
 	termbox.Clear(coldef, coldef)
 
-	headers := i.row.Headers(status, strings.Join(i.zones, ", "), len(i.servers))
-
 	if i.row.Current == 0 {
 		i.row.Current = i.row.HeadersSize()
 	}
+
+	headers := i.row.Headers(status, strings.Join(i.zones, ", "), len(i.servers), i.currentNo())
 
 	for index, header := range headers {
 		i.setLine(index, header)
 	}
 
+	i.serverByCurrentRow = map[int]server.Server{}
+
 	for index, server := range i.servers {
-		no := index + 1
-		server.No = no
-		i.setLine(index+i.row.HeadersSize(), server.String(i.showServerID))
+		currentRow := index + i.row.HeadersSize()
+		i.setLine(currentRow, server.String(i.showServerID))
+		i.serverByCurrentRow[currentRow] = server
 	}
 	i.row.MovableBottom = len(i.servers) + len(headers) - 1
 
@@ -181,39 +186,30 @@ func (i *Isac) currentNo() int {
 	return i.row.Current + 1 - i.row.HeadersSize()
 }
 
-func (i *Isac) currentServerUp() {
-	var status string
+func (i *Isac) currentServerUp() (status string) {
+	s := i.serverByCurrentRow[i.row.Current]
 
-	for _, s := range i.servers {
-		if s.No == i.currentNo() {
-			if s.Instance.Status == "up" {
-				status = "No. %v is already up"
-				break
-			}
-
-			paths := []string{"server", s.ID, "power"}
-			statusCode, _, err := i.client.Request("PUT", s.Zone.Name, paths, nil)
-
-			if err != nil {
-				status = fmt.Sprintf("[ERROR] %v", err)
-				break
-			}
-
-			if statusCode != 200 {
-				status = fmt.Sprintf("[ERROR] statusCode: %v", statusCode)
-				break
-			}
-
-			status = fmt.Sprintf("No. %v is up, wait few seconds, and refresh", i.currentNo())
-			break
-		}
+	if s.ID == "" {
+		return "[ERROR] Current row has no Server"
 	}
 
-	if status == "" {
-		status = fmt.Sprintf("[ERROR] Unexpected Error at No. %v", i.currentNo())
+	if s.Instance.Status == "up" {
+		return fmt.Sprintf("Server.Name %v is already up", s.Name)
+
 	}
 
-	i.draw(status)
+	paths := []string{"server", s.ID, "power"}
+	statusCode, _, err := i.client.Request("PUT", s.Zone.Name, paths, nil)
+
+	if err != nil {
+		return fmt.Sprintf("[ERROR] %v", err)
+	}
+
+	if statusCode != 200 {
+		return fmt.Sprintf("[ERROR] Server.Name: %v, PUT /server/:id/power failed, statusCode: %v", s.Name, statusCode)
+	}
+
+	return fmt.Sprintf("Server.Name %v is booting, wait few seconds, and refresh", s.Name)
 }
 
 func (i *Isac) refresh() {

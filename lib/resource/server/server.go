@@ -10,7 +10,6 @@ type ServerCollection struct {
 }
 
 type Server struct {
-	No       int
 	ID       string   `json:"ID,omitempty"`
 	Name     string   `json:"Name,omitempty"`
 	Instance Instance `json:"Instance,omitempty"`
@@ -42,5 +41,5 @@ func (s *Server) String(showServerID bool) string {
 	}
 
 	status := fmt.Sprintf("%6v", s.Instance.Status)
-	return fmt.Sprintf("%-3v %v %v %v %v", s.No, s.Zone.Name, id, status, s.Name)
+	return fmt.Sprintf("%v %v %v %v", s.Zone.Name, id, status, s.Name)
 }
