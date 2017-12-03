@@ -3,7 +3,6 @@ package row
 import "fmt"
 
 type Row struct {
-	MovableTop    int
 	MovableBottom int
 	Current       int
 }
@@ -26,4 +25,9 @@ func (r *Row) Headers(status string, zones string, totalServers int) (headers []
 	}
 
 	return headers
+}
+
+func (r *Row) HeadersSize() (headersSize int) {
+	headersSize = len(r.Headers("", "", 0))
+	return headersSize
 }
