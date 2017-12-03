@@ -46,13 +46,18 @@ func New(configPath string, showServerID bool, verbose bool, zones string) (i *I
 		logger.Level = logrus.DebugLevel
 	}
 
+	zs := []string{config.Zone}
+	if zones != "" {
+		zs = strings.Split(zones, ",")
+	}
+
 	i = &Isac{
 		client:       client,
 		config:       config,
 		showServerID: showServerID,
 		logger:       logger,
 		row:          row,
-		zones:        strings.Split(zones, ","),
+		zones:        zs,
 	}
 	return i, nil
 }
