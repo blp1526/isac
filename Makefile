@@ -15,3 +15,18 @@ test: vet
 snapshot: test
 	goreleaser --rm-dist --snapshot
 	@echo
+
+.PHONY: clean
+clean:
+	rm -rf dist
+	@echo
+
+.PHONY: tagging
+tagging:
+	git tag -a ${TAG} -m "${TAG} release"
+	@echo
+
+.PHONY: release
+release:
+	goreleaser --rm-dist
+	@echo
