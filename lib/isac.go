@@ -110,7 +110,7 @@ func (i *Isac) draw(status string) {
 	const coldef = termbox.ColorDefault
 	termbox.Clear(coldef, coldef)
 
-	headers := i.row.Headers(status, len(i.servers))
+	headers := i.row.Headers(status, strings.Join(i.zones, ", "), len(i.servers))
 
 	if i.row.Current == 0 {
 		i.row.Current = len(headers)
