@@ -81,6 +81,8 @@ MAINLOOP:
 				i.currentRowUp()
 			case termbox.KeyArrowDown, termbox.KeyCtrlN:
 				i.currentRowDown()
+			case termbox.KeyCtrlU:
+				i.currentServerUp()
 			}
 		default:
 			i.draw("OK")
@@ -113,20 +115,17 @@ func (i *Isac) draw(status string) {
 	headers := i.row.Headers(status, strings.Join(i.zones, ", "), len(i.servers))
 
 	if i.row.Current == 0 {
-		i.row.Current = len(headers)
+		i.row.Current = i.row.HeadersSize()
 	}
 
 	for index, header := range headers {
 		i.setLine(index, header)
 	}
 
-	offsetSize := len(headers)
-	i.row.MovableTop = len(headers)
-
 	for index, server := range i.servers {
 		no := index + 1
 		server.No = no
-		i.setLine(index+offsetSize, server.String(i.showServerID))
+		i.setLine(index+i.row.HeadersSize(), server.String(i.showServerID))
 	}
 	i.row.MovableBottom = len(i.servers) + len(headers) - 1
 
@@ -134,7 +133,7 @@ func (i *Isac) draw(status string) {
 }
 
 func (i *Isac) currentRowUp() {
-	if i.row.Current > i.row.MovableTop {
+	if i.row.Current > i.row.HeadersSize() {
 		i.row.Current -= 1
 	}
 
@@ -172,4 +171,13 @@ func (i *Isac) reloadServers() (err error) {
 	}
 
 	return nil
+}
+
+func (i *Isac) no() (no int) {
+	no = i.row.Current + 1 - i.row.HeadersSize()
+	return no
+}
+
+func (i *Isac) currentServerUp() {
+	i.draw(fmt.Sprintf("%v", i.no()))
 }
