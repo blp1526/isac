@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/blp1526/isac/lib/api"
 	"github.com/blp1526/isac/lib/config"
@@ -16,12 +17,13 @@ import (
 )
 
 type Isac struct {
+	filter       string
 	client       *api.Client
 	config       *config.Config
 	showServerID bool
 	logger       *logrus.Logger
 	row          *row.Row
-	// FIXME: wastful
+	// FIXME: wasteful
 	serverByCurrentRow map[int]server.Server
 	servers            []server.Server
 	zones              []string
@@ -93,6 +95,12 @@ MAINLOOP:
 				i.draw(status)
 			case termbox.KeyCtrlR:
 				i.refresh()
+			case termbox.KeyBackspace2, termbox.KeyCtrlH:
+				i.removeRuneFromFilter()
+			default:
+				if ev.Ch != 0 {
+					i.addRuneToFilter(ev.Ch)
+				}
 			}
 		default:
 			i.draw("OK")
@@ -126,7 +134,7 @@ func (i *Isac) draw(status string) {
 		i.row.Current = i.row.HeadersSize()
 	}
 
-	headers := i.row.Headers(status, strings.Join(i.zones, ", "), len(i.servers), i.currentNo())
+	headers := i.row.Headers(status, strings.Join(i.zones, ", "), len(i.servers), i.currentNo(), i.filter)
 
 	for index, header := range headers {
 		i.setLine(index, header)
@@ -230,4 +238,20 @@ func (i *Isac) refresh() {
 	}
 
 	i.draw(status)
+}
+
+func (i *Isac) addRuneToFilter(r rune) {
+	var buf [utf8.UTFMax]byte
+	n := utf8.EncodeRune(buf[:], r)
+	i.filter = i.filter + string(buf[:n])
+	i.draw("OK")
+}
+
+func (i *Isac) removeRuneFromFilter() {
+	r := []rune(i.filter)
+	if len(r) > 0 {
+		i.filter = string(r[:(len(r) - 1)])
+	}
+
+	i.draw("OK")
 }
