@@ -130,11 +130,23 @@ func (i *Isac) draw(status string) {
 	const coldef = termbox.ColorDefault
 	termbox.Clear(coldef, coldef)
 
+	var servers []server.Server
+	for _, s := range i.servers {
+		if strings.Contains(s.Name, i.filter) {
+			servers = append(servers, s)
+		}
+	}
+
 	if i.row.Current == 0 {
 		i.row.Current = i.row.HeadersSize()
 	}
 
-	headers := i.row.Headers(status, strings.Join(i.zones, ", "), len(i.servers), i.currentNo(), i.filter)
+	i.row.MovableBottom = len(servers) + i.row.HeadersSize() - 1
+	if i.row.Current > i.row.MovableBottom {
+		i.row.Current = i.row.HeadersSize()
+	}
+
+	headers := i.row.Headers(status, strings.Join(i.zones, ", "), len(servers), i.currentNo(), i.filter)
 
 	for index, header := range headers {
 		i.setLine(index, header)
@@ -142,12 +154,11 @@ func (i *Isac) draw(status string) {
 
 	i.serverByCurrentRow = map[int]server.Server{}
 
-	for index, server := range i.servers {
+	for index, server := range servers {
 		currentRow := index + i.row.HeadersSize()
 		i.setLine(currentRow, server.String(i.showServerID))
 		i.serverByCurrentRow[currentRow] = server
 	}
-	i.row.MovableBottom = len(i.servers) + len(headers) - 1
 
 	termbox.Flush()
 }
