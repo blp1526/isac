@@ -151,6 +151,8 @@ func (i *Isac) currentRowDown() {
 }
 
 func (i *Isac) reloadServers() (err error) {
+	i.servers = []server.Server{}
+
 	for _, zone := range i.zones {
 		statusCode, respBody, err := i.client.Request("GET", zone, []string{"server"}, nil)
 		if err != nil {
@@ -166,8 +168,6 @@ func (i *Isac) reloadServers() (err error) {
 		if err != nil {
 			return err
 		}
-
-		i.servers = []server.Server{}
 
 		for _, s := range sc.Servers {
 			i.servers = append(i.servers, s)
