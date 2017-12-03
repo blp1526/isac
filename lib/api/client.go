@@ -40,7 +40,7 @@ func (client *Client) Request(method string, zone string, paths []string, params
 	}
 
 	req.SetBasicAuth(client.AccessToken, client.AccessTokenSecret)
-	c := &http.Client{Timeout: 10 * time.Second}
+	c := &http.Client{Timeout: 30 * time.Second}
 	resp, err := c.Do(req)
 	if err != nil {
 		return statusCode, respBody, err
