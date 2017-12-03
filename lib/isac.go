@@ -83,6 +83,8 @@ MAINLOOP:
 				i.currentRowDown()
 			case termbox.KeyCtrlU:
 				i.currentServerUp()
+			case termbox.KeyCtrlR:
+				i.refresh()
 			}
 		default:
 			i.draw("OK")
@@ -165,6 +167,8 @@ func (i *Isac) reloadServers() (err error) {
 			return err
 		}
 
+		i.servers = []server.Server{}
+
 		for _, s := range sc.Servers {
 			i.servers = append(i.servers, s)
 		}
@@ -173,11 +177,56 @@ func (i *Isac) reloadServers() (err error) {
 	return nil
 }
 
-func (i *Isac) no() (no int) {
-	no = i.row.Current + 1 - i.row.HeadersSize()
-	return no
+func (i *Isac) currentNo() int {
+	return i.row.Current + 1 - i.row.HeadersSize()
 }
 
 func (i *Isac) currentServerUp() {
-	i.draw(fmt.Sprintf("%v", i.no()))
+	var status string
+
+	for _, s := range i.servers {
+		if s.No == i.currentNo() {
+			if s.Instance.Status == "up" {
+				status = "No. %v is already up"
+				break
+			}
+
+			paths := []string{"server", s.ID, "power"}
+			statusCode, _, err := i.client.Request("PUT", s.Zone.Name, paths, nil)
+
+			if err != nil {
+				status = fmt.Sprintf("[ERROR] %v", err)
+				break
+			}
+
+			if statusCode != 200 {
+				status = fmt.Sprintf("[ERROR] statusCode: %v", statusCode)
+				break
+			}
+
+			status = fmt.Sprintf("No. %v is up, wait few seconds, and refresh", i.currentNo())
+			break
+		}
+	}
+
+	if status == "" {
+		status = fmt.Sprintf("[ERROR] Unexpected Error at No. %v", i.currentNo())
+	}
+
+	i.draw(status)
+}
+
+func (i *Isac) refresh() {
+	var status string
+
+	err := i.reloadServers()
+	if err != nil {
+		status = fmt.Sprintf("[ERROR] %v", err)
+	}
+
+	if status == "" {
+		status = "Servers have been refreshed"
+	}
+
+	i.draw(status)
 }
