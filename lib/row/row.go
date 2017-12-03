@@ -13,11 +13,13 @@ func New() *Row {
 	return r
 }
 
-func (r *Row) Headers() (headers []string) {
+func (r *Row) Headers(status string) (headers []string) {
 	no := fmt.Sprintf("%-3v", "No")
 	id := fmt.Sprintf("%-12v", "ID")
 
 	headers = []string{
+		fmt.Sprintf("isac Status: %v", status),
+		fmt.Sprintf(""),
 		fmt.Sprintf("%v Zone %v Status Name", no, id),
 	}
 
