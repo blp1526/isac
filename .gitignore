@@ -1,3 +1,5 @@
+.envrc
+
 tmp/
 dist/
 vendor/
