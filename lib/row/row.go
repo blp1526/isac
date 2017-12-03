@@ -18,13 +18,8 @@ func (r *Row) Headers() (headers []string) {
 	id := fmt.Sprintf("%-12v", "ID")
 
 	headers = []string{
-		fmt.Sprintf("%s Zone %s Status Name", no, id),
+		fmt.Sprintf("%v Zone %v Status Name", no, id),
 	}
 
 	return headers
-}
-
-func (r *Row) Separator() (separator string) {
-	separator = "============================="
-	return separator
 }

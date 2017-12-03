@@ -60,12 +60,12 @@ func main() {
 	app.Action = func(c *cli.Context) (err error) {
 		i, err := isac.New(configPath, showServerID, verbose, zones)
 		if err != nil {
-			return cli.NewExitError(fmt.Sprintf("%s", err), ExitCodeNG)
+			return cli.NewExitError(fmt.Sprintf("%v", err), ExitCodeNG)
 		}
 
 		err = i.Run()
 		if err != nil {
-			return cli.NewExitError(fmt.Sprintf("%s", err), ExitCodeNG)
+			return cli.NewExitError(fmt.Sprintf("%v", err), ExitCodeNG)
 		}
 
 		return nil

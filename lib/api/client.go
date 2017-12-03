@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"path"
+	"strings"
 	"time"
 )
 
@@ -21,16 +22,17 @@ func NewClient(accessToken string, accessTokenSecret string) *Client {
 	return client
 }
 
-func (client *Client) url(zone string, resource string, id string) (url string) {
+func (client *Client) url(zone string, paths []string) (url string) {
 	scheme := "https://"
 	domain := "secure.sakura.ad.jp"
-	path := "/" + path.Join("cloud", "zone", zone, "api", "cloud", "1.1", resource, id)
+	last := strings.Join(paths, "/")
+	path := "/" + path.Join("cloud", "zone", zone, "api", "cloud", "1.1", last)
 	url = scheme + domain + path
 	return url
 }
 
-func (client *Client) Request(method string, zone string, resource string, id string, params []byte) (statusCode int, respBody []byte, err error) {
-	url := client.url(zone, resource, id)
+func (client *Client) Request(method string, zone string, paths []string, params []byte) (statusCode int, respBody []byte, err error) {
+	url := client.url(zone, paths)
 
 	req, err := http.NewRequest(method, url, bytes.NewBuffer(params))
 	if err != nil {
