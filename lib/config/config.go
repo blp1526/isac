@@ -8,6 +8,7 @@ import (
 type Config struct {
 	AccessToken       string `json:"AccessToken,omitempty"`
 	AccessTokenSecret string `json:"AccessTokenSecret,omitempty"`
+	Zone              string `json:"Zone,omitempty"`
 }
 
 func New(configPath string) (config *Config, err error) {

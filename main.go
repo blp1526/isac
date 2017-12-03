@@ -52,8 +52,7 @@ func main() {
 
 		cli.StringFlag{
 			Name:        "zones",
-			Value:       "is1a,is1b,tk1a",
-			Usage:       "Set `ZONES` (separated by \",\").",
+			Usage:       "Set `ZONES` (separated by \",\", example: \"is1a,is1b,tk1a\").",
 			Destination: &zones,
 		},
 	}
