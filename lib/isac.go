@@ -2,6 +2,7 @@ package isac
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -66,7 +67,6 @@ func (i *Isac) Run() (err error) {
 	}
 
 	i.row.Current = len(i.row.Headers())
-
 	defer termbox.Close()
 	i.draw()
 
@@ -121,13 +121,12 @@ func (i *Isac) draw() {
 	offsetSize := len(i.row.Headers())
 	i.row.MovableTop = len(i.row.Headers())
 
-	i.setLine(offsetSize, i.row.Separator())
-	offsetSize = offsetSize + 1
-
 	for index, server := range i.servers {
-		i.setLine(index+offsetSize, server.String(index+1, i.showServerID))
+		no := index + 1
+		server.No = no
+		i.setLine(index+offsetSize, server.String(i.showServerID))
 	}
-	i.row.MovableBottom = len(i.servers) + 1
+	i.row.MovableBottom = len(i.servers)
 
 	termbox.Flush()
 }
@@ -150,13 +149,13 @@ func (i *Isac) currentRowDown() {
 
 func (i *Isac) reloadServers() (err error) {
 	for _, zone := range i.zones {
-		statusCode, respBody, err := i.client.Request("GET", zone, "server", "", nil)
+		statusCode, respBody, err := i.client.Request("GET", zone, []string{"server"}, nil)
 		if err != nil {
 			return err
 		}
 
 		if statusCode != 200 {
-			return fmt.Errorf("statusCode: %v", statusCode)
+			return errors.New(fmt.Sprintf("statusCode: %v", statusCode))
 		}
 
 		sc := server.NewCollection(zone)
