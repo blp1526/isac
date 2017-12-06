@@ -27,6 +27,7 @@ type Isac struct {
 	serverByCurrentRow map[int]server.Server
 	servers            []server.Server
 	zones              []string
+	status             string
 }
 
 func New(configPath string, showServerID bool, verbose bool, zones string) (i *Isac, err error) {
@@ -103,7 +104,7 @@ MAINLOOP:
 				}
 			}
 		default:
-			i.draw("OK")
+			i.draw("")
 		}
 	}
 	return nil
@@ -130,6 +131,10 @@ func (i *Isac) draw(status string) {
 	const coldef = termbox.ColorDefault
 	termbox.Clear(coldef, coldef)
 
+	if status != "" {
+		i.status = status
+	}
+
 	var servers []server.Server
 	for _, s := range i.servers {
 		if strings.Contains(s.Name, i.filter) {
@@ -146,7 +151,7 @@ func (i *Isac) draw(status string) {
 		i.row.Current = i.row.HeadersSize()
 	}
 
-	headers := i.row.Headers(status, strings.Join(i.zones, ", "), len(servers), i.currentNo(), i.filter)
+	headers := i.row.Headers(i.status, strings.Join(i.zones, ", "), len(servers), i.currentNo(), i.filter)
 
 	for index, header := range headers {
 		i.setLine(index, header)
@@ -168,7 +173,7 @@ func (i *Isac) currentRowUp() {
 		i.row.Current -= 1
 	}
 
-	i.draw("OK")
+	i.draw("")
 }
 
 func (i *Isac) currentRowDown() {
@@ -176,7 +181,7 @@ func (i *Isac) currentRowDown() {
 		i.row.Current += 1
 	}
 
-	i.draw("OK")
+	i.draw("")
 }
 
 func (i *Isac) reloadServers() (err error) {
@@ -255,7 +260,7 @@ func (i *Isac) addRuneToFilter(r rune) {
 	var buf [utf8.UTFMax]byte
 	n := utf8.EncodeRune(buf[:], r)
 	i.filter = i.filter + string(buf[:n])
-	i.draw("OK")
+	i.draw("")
 }
 
 func (i *Isac) removeRuneFromFilter() {
@@ -264,5 +269,5 @@ func (i *Isac) removeRuneFromFilter() {
 		i.filter = string(r[:(len(r) - 1)])
 	}
 
-	i.draw("OK")
+	i.draw("")
 }
