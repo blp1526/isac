@@ -20,7 +20,7 @@ func TestRowHeaders(t *testing.T) {
 			totalServers: 3,
 			currentNo:    1,
 			filter:       "git",
-			want:         []string{"isac Status: OK", "Selected Zones: tk1a", "Total Servers: 3, Current No.: 1", "Filter: git", "", "Zone ID           Status Name"},
+			want:         []string{"isac Message: OK", "Selected Zones: tk1a", "Total Servers: 3, Current No.: 1", "Filter: git", "", "Zone ID           Status Name"},
 		},
 	}
 

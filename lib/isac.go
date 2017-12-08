@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"sort"
 	"strings"
 	"unicode/utf8"
 
@@ -26,8 +27,9 @@ type Isac struct {
 	// FIXME: wasteful
 	serverByCurrentRow map[int]server.Server
 	servers            []server.Server
+	reverseSort        bool
 	zones              []string
-	status             string
+	message            string
 }
 
 func New(configPath string, showServerID bool, verbose bool, zones string) (i *Isac, err error) {
@@ -61,6 +63,7 @@ func New(configPath string, showServerID bool, verbose bool, zones string) (i *I
 		logger:       logger,
 		row:          row,
 		zones:        zs,
+		reverseSort:  false,
 	}
 	return i, nil
 }
@@ -92,12 +95,15 @@ MAINLOOP:
 			case termbox.KeyArrowDown, termbox.KeyCtrlN:
 				i.currentRowDown()
 			case termbox.KeyCtrlU:
-				status := i.currentServerUp()
-				i.draw(status)
+				message := i.currentServerUp()
+				i.draw(message)
 			case termbox.KeyCtrlR:
 				i.refresh()
 			case termbox.KeyBackspace2, termbox.KeyCtrlH:
 				i.removeRuneFromFilter()
+			case termbox.KeyCtrlS:
+				i.reverseSort = !i.reverseSort
+				i.draw("")
 			default:
 				if ev.Ch != 0 {
 					i.addRuneToFilter(ev.Ch)
@@ -127,12 +133,12 @@ func (i *Isac) setLine(y int, line string) {
 	}
 }
 
-func (i *Isac) draw(status string) {
+func (i *Isac) draw(message string) {
 	const coldef = termbox.ColorDefault
 	termbox.Clear(coldef, coldef)
 
-	if status != "" {
-		i.status = status
+	if message != "" {
+		i.message = message
 	}
 
 	var servers []server.Server
@@ -141,6 +147,14 @@ func (i *Isac) draw(status string) {
 			servers = append(servers, s)
 		}
 	}
+
+	sort.Slice(servers, func(x, y int) bool {
+		if i.reverseSort {
+			return servers[x].Instance.Status > servers[y].Instance.Status
+		} else {
+			return servers[x].Instance.Status < servers[y].Instance.Status
+		}
+	})
 
 	if i.row.Current == 0 {
 		i.row.Current = i.row.HeadersSize()
@@ -151,7 +165,7 @@ func (i *Isac) draw(status string) {
 		i.row.Current = i.row.HeadersSize()
 	}
 
-	headers := i.row.Headers(i.status, strings.Join(i.zones, ", "), len(servers), i.currentNo(), i.filter)
+	headers := i.row.Headers(i.message, strings.Join(i.zones, ", "), len(servers), i.currentNo(), i.filter)
 
 	for index, header := range headers {
 		i.setLine(index, header)
@@ -215,7 +229,7 @@ func (i *Isac) currentNo() int {
 	return i.row.Current + 1 - i.row.HeadersSize()
 }
 
-func (i *Isac) currentServerUp() (status string) {
+func (i *Isac) currentServerUp() (message string) {
 	s := i.serverByCurrentRow[i.row.Current]
 
 	if s.ID == "" {
@@ -242,18 +256,18 @@ func (i *Isac) currentServerUp() (status string) {
 }
 
 func (i *Isac) refresh() {
-	var status string
+	var message string
 
 	err := i.reloadServers()
 	if err != nil {
-		status = fmt.Sprintf("[ERROR] %v", err)
+		message = fmt.Sprintf("[ERROR] %v", err)
 	}
 
-	if status == "" {
-		status = "Servers have been refreshed"
+	if message == "" {
+		message = "Servers have been refreshed"
 	}
 
-	i.draw(status)
+	i.draw(message)
 }
 
 func (i *Isac) addRuneToFilter(r rune) {

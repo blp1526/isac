@@ -12,11 +12,11 @@ func New() *Row {
 	return r
 }
 
-func (r *Row) Headers(status string, zones string, totalServers int, currentNo int, filter string) (headers []string) {
+func (r *Row) Headers(message string, zones string, totalServers int, currentNo int, filter string) (headers []string) {
 	id := fmt.Sprintf("%-12v", "ID")
 
 	headers = []string{
-		fmt.Sprintf("isac Status: %v", status),
+		fmt.Sprintf("isac Message: %v", message),
 		fmt.Sprintf("Selected Zones: %v", zones),
 		fmt.Sprintf("Total Servers: %v, Current No.: %v", totalServers, currentNo),
 		fmt.Sprintf("Filter: %v", filter),
