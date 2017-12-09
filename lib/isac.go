@@ -21,6 +21,7 @@ type Isac struct {
 	filter       string
 	client       *api.Client
 	config       *config.Config
+	detail       bool
 	showServerID bool
 	logger       *logrus.Logger
 	row          *row.Row
@@ -59,6 +60,7 @@ func New(configPath string, showServerID bool, verbose bool, zones string) (i *I
 	i = &Isac{
 		client:       client,
 		config:       config,
+		detail:       false,
 		showServerID: showServerID,
 		logger:       logger,
 		row:          row,
@@ -104,6 +106,9 @@ MAINLOOP:
 			case termbox.KeyCtrlS:
 				i.reverseSort = !i.reverseSort
 				i.draw("")
+			case termbox.KeyEnter:
+				i.detail = !i.detail
+				i.draw("")
 			default:
 				if ev.Ch != 0 {
 					i.addRuneToFilter(ev.Ch)
@@ -136,6 +141,18 @@ func (i *Isac) setLine(y int, line string) {
 func (i *Isac) draw(message string) {
 	const coldef = termbox.ColorDefault
 	termbox.Clear(coldef, coldef)
+
+	if i.detail {
+		server := i.serverByCurrentRow[i.row.Current]
+		i.setLine(0, fmt.Sprintf("Server.Zone.Name:       %v", server.Zone.Name))
+		i.setLine(1, fmt.Sprintf("Server.Name:            %v", server.Name))
+		i.setLine(2, fmt.Sprintf("Server.Description:     %v", server.Description))
+		i.setLine(3, fmt.Sprintf("Server.ServiceClass:    %v", server.ServiceClass))
+		i.setLine(4, fmt.Sprintf("Server.Instance.Status: %v", server.Instance.Status))
+		i.setLine(5, fmt.Sprintf("Server.Availability:    %v", server.Availability))
+		termbox.Flush()
+		return
+	}
 
 	if message != "" {
 		i.message = message
