@@ -10,10 +10,13 @@ type ServerCollection struct {
 }
 
 type Server struct {
-	ID       string   `json:"ID,omitempty"`
-	Name     string   `json:"Name,omitempty"`
-	Instance Instance `json:"Instance,omitempty"`
-	Zone     Zone     `json:"Zone,omitempty"`
+	Availability string   `json:"Availability,omitempty"`
+	Description  string   `json:"Description,omitempty"`
+	ID           string   `json:"ID,omitempty"`
+	Instance     Instance `json:"Instance,omitempty"`
+	Name         string   `json:"Name,omitempty"`
+	ServiceClass string   `json:"ServiceClass,omitempty"`
+	Zone         Zone     `json:"Zone,omitempty"`
 }
 
 type Instance struct {
