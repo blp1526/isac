@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 )
 
 type Config struct {
@@ -25,7 +26,18 @@ func New(configPath string) (config *Config, err error) {
 	return config, err
 }
 
-func (config *Config) CreateFile(dir string) (err error) {
+func CreateFile(dir string) (err error) {
+	config := &Config{
+		AccessToken:       "Write your AccessToken",
+		AccessTokenSecret: "Write your AccessTokenSecret",
+		Zone:              "Write your default Zone",
+	}
+
+	err = os.MkdirAll(filepath.Dir(dir), os.ModePerm)
+	if err != nil {
+		return err
+	}
+
 	_, err = os.Stat(dir)
 	if err == nil {
 		return fmt.Errorf("Already you have %s", dir)
