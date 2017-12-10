@@ -2,7 +2,9 @@ package config
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
+	"os"
 )
 
 type Config struct {
@@ -21,4 +23,23 @@ func New(configPath string) (config *Config, err error) {
 
 	err = json.Unmarshal(b, config)
 	return config, err
+}
+
+func (config *Config) CreateFile(dir string) (err error) {
+	_, err = os.Stat(dir)
+	if err == nil {
+		return fmt.Errorf("Already you have %s", dir)
+	}
+
+	j, err := json.MarshalIndent(config, "", "  ")
+	if err != nil {
+		return err
+	}
+
+	err = ioutil.WriteFile(dir, j, 0600)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
