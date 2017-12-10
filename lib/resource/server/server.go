@@ -37,9 +37,9 @@ func New() *Server {
 	return s
 }
 
-func (s *Server) String(showServerID bool) string {
+func (s *Server) String(unanonymize bool) string {
 	id := "************"
-	if showServerID {
+	if unanonymize {
 		id = s.ID
 	}
 

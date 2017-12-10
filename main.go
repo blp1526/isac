@@ -12,14 +12,13 @@ import (
 
 const ExitCodeNG = 1
 
-var configPath string
-var showServerID bool
+var unanonymize bool
 var verbose bool
 var version string
 var zones string
 
 func main() {
-	defaultConfigPath := filepath.Join(os.Getenv("HOME"), ".usacloud", "default", "config.json")
+	configPath := filepath.Join(os.Getenv("HOME"), ".usacloud", "default", "config.json")
 
 	app := cli.NewApp()
 	app.Name = "isac"
@@ -33,28 +32,21 @@ func main() {
 	}
 
 	app.Flags = []cli.Flag{
-		cli.StringFlag{
-			Name:        "config, c",
-			Value:       defaultConfigPath,
-			Usage:       "Set `CONFIG_PATH`.",
-			Destination: &configPath,
-		},
-
 		cli.BoolFlag{
-			Name:        "show-server-id",
-			Usage:       "Show server id.",
-			Destination: &showServerID,
+			Name:        "unanonymize",
+			Usage:       "unanonymize personal data",
+			Destination: &unanonymize,
 		},
 
 		cli.BoolFlag{
 			Name:        "verbose",
-			Usage:       "Print debug log.",
+			Usage:       "print debug log",
 			Destination: &verbose,
 		},
 
 		cli.StringFlag{
 			Name:        "zones",
-			Usage:       "Set `ZONES` (separated by \",\", example: \"is1a,is1b,tk1a\").",
+			Usage:       "set `ZONES` (separated by \",\", example: \"is1a,is1b,tk1a\")",
 			Destination: &zones,
 		},
 	}
@@ -62,25 +54,20 @@ func main() {
 	app.Commands = []cli.Command{
 		{
 			Name:  "init",
-			Usage: "Create config.json",
+			Usage: "Creates config.json",
 			Action: func(c *cli.Context) (err error) {
-				cfg := &config.Config{
-					AccessToken:       "Write your AccessToken",
-					AccessTokenSecret: "Write your AccessTokenSecret",
-					Zone:              "Write your default Zone",
-				}
-				err = cfg.CreateFile(defaultConfigPath)
+				err = config.CreateFile(configPath)
 				if err != nil {
 					return cli.NewExitError(fmt.Sprintf("%v", err), ExitCodeNG)
 				}
-				fmt.Printf("%v has been created\n", defaultConfigPath)
+				fmt.Printf("%v has been created\n", configPath)
 				return nil
 			},
 		},
 	}
 
 	app.Action = func(c *cli.Context) (err error) {
-		i, err := isac.New(configPath, showServerID, verbose, zones)
+		i, err := isac.New(configPath, unanonymize, verbose, zones)
 		if err != nil {
 			return cli.NewExitError(fmt.Sprintf("%v", err), ExitCodeNG)
 		}

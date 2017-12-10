@@ -18,13 +18,13 @@ import (
 )
 
 type Isac struct {
-	filter       string
-	client       *api.Client
-	config       *config.Config
-	detail       bool
-	showServerID bool
-	logger       *logrus.Logger
-	row          *row.Row
+	filter      string
+	client      *api.Client
+	config      *config.Config
+	detail      bool
+	unanonymize bool
+	logger      *logrus.Logger
+	row         *row.Row
 	// FIXME: wasteful
 	serverByCurrentRow map[int]server.Server
 	servers            []server.Server
@@ -33,7 +33,7 @@ type Isac struct {
 	message            string
 }
 
-func New(configPath string, showServerID bool, verbose bool, zones string) (i *Isac, err error) {
+func New(configPath string, unanonymize bool, verbose bool, zones string) (i *Isac, err error) {
 	config, err := config.New(configPath)
 	if err != nil {
 		return i, err
@@ -58,14 +58,14 @@ func New(configPath string, showServerID bool, verbose bool, zones string) (i *I
 	}
 
 	i = &Isac{
-		client:       client,
-		config:       config,
-		detail:       false,
-		showServerID: showServerID,
-		logger:       logger,
-		row:          row,
-		zones:        zs,
-		reverseSort:  false,
+		client:      client,
+		config:      config,
+		detail:      false,
+		unanonymize: unanonymize,
+		logger:      logger,
+		row:         row,
+		zones:       zs,
+		reverseSort: false,
 	}
 	return i, nil
 }
@@ -192,7 +192,7 @@ func (i *Isac) draw(message string) {
 
 	for index, server := range servers {
 		currentRow := index + i.row.HeadersSize()
-		i.setLine(currentRow, server.String(i.showServerID))
+		i.setLine(currentRow, server.String(i.unanonymize))
 		i.serverByCurrentRow[currentRow] = server
 	}
 
