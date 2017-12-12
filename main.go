@@ -22,7 +22,7 @@ func main() {
 
 	app := cli.NewApp()
 	app.Name = "isac"
-	app.Usage = "interactive SAKURA Cloud"
+	app.Usage = "Interactive SAKURA Cloud"
 	app.Version = version
 	app.Authors = []cli.Author{
 		cli.Author{
