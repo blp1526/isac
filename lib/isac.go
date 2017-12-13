@@ -128,7 +128,7 @@ func (i *Isac) setLine(y int, line string) {
 		fgColor := termbox.ColorDefault
 		bgColor := termbox.ColorDefault
 
-		if i.row.Current == y {
+		if !i.detail && i.row.Current == y {
 			fgColor = termbox.ColorBlack
 			bgColor = termbox.ColorYellow
 		}
@@ -147,9 +147,13 @@ func (i *Isac) draw(message string) {
 		i.setLine(0, fmt.Sprintf("Server.Zone.Name:       %v", server.Zone.Name))
 		i.setLine(1, fmt.Sprintf("Server.Name:            %v", server.Name))
 		i.setLine(2, fmt.Sprintf("Server.Description:     %v", server.Description))
-		i.setLine(3, fmt.Sprintf("Server.ServiceClass:    %v", server.ServiceClass))
-		i.setLine(4, fmt.Sprintf("Server.Instance.Status: %v", server.Instance.Status))
-		i.setLine(5, fmt.Sprintf("Server.Availability:    %v", server.Availability))
+		i.setLine(3, fmt.Sprintf("Server.InterfaceDriver: %v", server.InterfaceDriver))
+		i.setLine(4, fmt.Sprintf("Server.ServiceClass:    %v", server.ServiceClass))
+		i.setLine(5, fmt.Sprintf("Server.Instance.Status: %v", server.Instance.Status))
+		i.setLine(6, fmt.Sprintf("Server.Availability:    %v", server.Availability))
+		i.setLine(7, fmt.Sprintf("Server.CreatedAt:       %v", server.CreatedAt))
+		i.setLine(8, fmt.Sprintf("Server.ModifiedAt:      %v", server.ModifiedAt))
+		i.setLine(9, fmt.Sprintf("Server.Tags:            %v", server.Tags))
 		termbox.Flush()
 		return
 	}
@@ -219,13 +223,15 @@ func (i *Isac) reloadServers() (err error) {
 	i.servers = []server.Server{}
 
 	for _, zone := range i.zones {
-		statusCode, respBody, err := i.client.Request("GET", zone, []string{"server"}, nil)
+		url := i.client.Url(zone, []string{"server"})
+
+		statusCode, respBody, err := i.client.Request("GET", url, nil)
 		if err != nil {
 			return err
 		}
 
 		if statusCode != 200 {
-			return errors.New(fmt.Sprintf("statusCode: %v", statusCode))
+			return errors.New(fmt.Sprintf("Request Method: GET, Request URL: %v, Status Code: %v", url, statusCode))
 		}
 
 		sc := server.NewCollection(zone)
@@ -254,19 +260,18 @@ func (i *Isac) currentServerUp() (message string) {
 	}
 
 	if s.Instance.Status == "up" {
-		return fmt.Sprintf("Server.Name %v is already up", s.Name)
-
+		return fmt.Sprintf("[WARNING] Server.Name %v is already up", s.Name)
 	}
 
-	paths := []string{"server", s.ID, "power"}
-	statusCode, _, err := i.client.Request("PUT", s.Zone.Name, paths, nil)
+	url := i.client.Url(s.Zone.Name, []string{"server", s.ID, "power"})
+	statusCode, _, err := i.client.Request("PUT", url, nil)
 
 	if err != nil {
 		return fmt.Sprintf("[ERROR] %v", err)
 	}
 
 	if statusCode != 200 {
-		return fmt.Sprintf("[ERROR] Server.Name: %v, PUT /server/:id/power failed, statusCode: %v", s.Name, statusCode)
+		return fmt.Sprintf(fmt.Sprintf("[ERROR] Request Method: PUT, Request URL: %v, Status Code: %v", url, statusCode))
 	}
 
 	return fmt.Sprintf("Server.Name %v is booting, wait few seconds, and refresh", s.Name)
