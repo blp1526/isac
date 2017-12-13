@@ -25,8 +25,4 @@
   version = "1.20.0"
 
 [[constraint]]
-  name = "github.com/sirupsen/logrus"
-  version = "v1.0.3"
-
-[[constraint]]
   name = "github.com/nsf/termbox-go"
