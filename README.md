@@ -42,7 +42,6 @@ $ isac
 |Name|Description|
 |-|-|
 |--unanonymize|unanonymize personal data|
-|--verbose| print debug log|
 |--zones ZONES|set ZONES (separated by ",", example: "is1a,is1b,tk1a")|
 |--help, -h|show help|
 |--version, -v|print the version|

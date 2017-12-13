@@ -14,7 +14,6 @@ import (
 	"github.com/blp1526/isac/lib/row"
 	"github.com/mattn/go-runewidth"
 	"github.com/nsf/termbox-go"
-	"github.com/sirupsen/logrus"
 )
 
 type Isac struct {
@@ -23,7 +22,6 @@ type Isac struct {
 	config      *config.Config
 	detail      bool
 	unanonymize bool
-	logger      *logrus.Logger
 	row         *row.Row
 	// FIXME: wasteful
 	serverByCurrentRow map[int]server.Server
@@ -33,7 +31,7 @@ type Isac struct {
 	message            string
 }
 
-func New(configPath string, unanonymize bool, verbose bool, zones string) (i *Isac, err error) {
+func New(configPath string, unanonymize bool, zones string) (i *Isac, err error) {
 	config, err := config.New(configPath)
 	if err != nil {
 		return i, err
@@ -41,16 +39,6 @@ func New(configPath string, unanonymize bool, verbose bool, zones string) (i *Is
 
 	client := api.NewClient(config.AccessToken, config.AccessTokenSecret)
 	row := row.New()
-
-	formatter := &logrus.TextFormatter{
-		FullTimestamp: true,
-	}
-
-	logger := logrus.New()
-	logger.Formatter = formatter
-	if verbose {
-		logger.Level = logrus.DebugLevel
-	}
 
 	zs := []string{config.Zone}
 	if zones != "" {
@@ -62,7 +50,6 @@ func New(configPath string, unanonymize bool, verbose bool, zones string) (i *Is
 		config:      config,
 		detail:      false,
 		unanonymize: unanonymize,
-		logger:      logger,
 		row:         row,
 		zones:       zs,
 		reverseSort: false,
@@ -271,7 +258,7 @@ func (i *Isac) currentServerUp() (message string) {
 	}
 
 	if statusCode != 200 {
-		return fmt.Sprintf(fmt.Sprintf("[ERROR] Request Method: PUT, Request URL: %v, Status Code: %v", url, statusCode))
+		return fmt.Sprintf("[ERROR] Request Method: PUT, Request URL: %v, Status Code: %v", url, statusCode)
 	}
 
 	return fmt.Sprintf("Server.Name %v is booting, wait few seconds, and refresh", s.Name)

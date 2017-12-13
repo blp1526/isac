@@ -13,7 +13,6 @@ import (
 const ExitCodeNG = 1
 
 var unanonymize bool
-var verbose bool
 var version string
 var zones string
 
@@ -36,12 +35,6 @@ func main() {
 			Name:        "unanonymize",
 			Usage:       "unanonymize personal data",
 			Destination: &unanonymize,
-		},
-
-		cli.BoolFlag{
-			Name:        "verbose",
-			Usage:       "print debug log",
-			Destination: &verbose,
 		},
 
 		cli.StringFlag{
@@ -67,7 +60,7 @@ func main() {
 	}
 
 	app.Action = func(c *cli.Context) (err error) {
-		i, err := isac.New(configPath, unanonymize, verbose, zones)
+		i, err := isac.New(configPath, unanonymize, zones)
 		if err != nil {
 			return cli.NewExitError(fmt.Sprintf("%v", err), ExitCodeNG)
 		}
