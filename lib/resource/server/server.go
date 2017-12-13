@@ -10,13 +10,17 @@ type ServerCollection struct {
 }
 
 type Server struct {
-	Availability string   `json:"Availability,omitempty"`
-	Description  string   `json:"Description,omitempty"`
-	ID           string   `json:"ID,omitempty"`
-	Instance     Instance `json:"Instance,omitempty"`
-	Name         string   `json:"Name,omitempty"`
-	ServiceClass string   `json:"ServiceClass,omitempty"`
-	Zone         Zone     `json:"Zone,omitempty"`
+	Availability    string   `json:"Availability,omitempty"`
+	CreatedAt       string   `json:"CreatedAt,omitempty"`
+	Description     string   `json:"Description,omitempty"`
+	ID              string   `json:"ID,omitempty"`
+	Instance        Instance `json:"Instance,omitempty"`
+	InterfaceDriver string   `json:"InterfaceDriver,omitempty"`
+	ModifiedAt      string   `json:"ModifiedAt,omitempty"`
+	Name            string   `json:"Name,omitempty"`
+	ServiceClass    string   `json:"ServiceClass,omitempty"`
+	Tags            []string `json:"Tags,omitempty"`
+	Zone            Zone     `json:"Zone,omitempty"`
 }
 
 type Instance struct {

@@ -28,11 +28,21 @@ $ isac
 
 |Name|Description|
 |-|-|
-|ESC, C-c|Exit.|
-|Arrow Up, C-p|Move current row up.|
-|Arrow Down, C-n|Move current row down.|
-|C-u|Power on current row's server.|
-|C-r|Refresh rows.|
-|BackSpace, C-h|Delete a filter character.|
-|C-s|Sort rows.|
-|Enter|Show current row's detail.|
+|ESC, C-c|exit|
+|Arrow Up, C-p|move current row up|
+|Arrow Down, C-n|move current row down|
+|C-u|power on current row's server|
+|C-r|refresh rows.|
+|BackSpace, C-h|delete a filter character|
+|C-s|sort rows|
+|Enter|show current row's detail|
+
+## Options
+
+|Name|Description|
+|-|-|
+|--unanonymize|unanonymize personal data|
+|--verbose| print debug log|
+|--zones ZONES|set ZONES (separated by ",", example: "is1a,is1b,tk1a")|
+|--help, -h|show help|
+|--version, -v|print the version|
