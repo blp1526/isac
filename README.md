@@ -32,7 +32,7 @@ $ isac
 |Arrow Up, C-p|move current row up|
 |Arrow Down, C-n|move current row down|
 |C-u|power on current row's server|
-|C-r|refresh rows.|
+|C-r|refresh rows|
 |BackSpace, C-h|delete a filter character|
 |C-s|sort rows|
 |Enter|show current row's detail|

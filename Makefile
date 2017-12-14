@@ -1,5 +1,5 @@
 .PHONY: all
-all: snapshot
+all: build
 
 .PHONY: vet
 vet:
@@ -11,9 +11,10 @@ test: vet
 	go test -v --cover ./...
 	@echo
 
-.PHONY: snapshot
-snapshot: test
-	goreleaser --rm-dist --snapshot
+.PHONY: build
+build: test
+	mkdir -p dist/
+	go build -o dist/isac
 	@echo
 
 .PHONY: clean
