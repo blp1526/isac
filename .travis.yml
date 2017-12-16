@@ -1,0 +1,7 @@
+language: go
+before_install:
+  - go get -u github.com/urfave/cli
+  - go get -u github.com/nsf/termbox-go
+go: 1.x
+os:
+  - linux
