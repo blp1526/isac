@@ -21,6 +21,7 @@ func main() {
 
 	app := cli.NewApp()
 	app.Name = "isac"
+	app.Version = version
 	app.Usage = "Interactive SAKURA Cloud"
 	app.Version = version
 	app.Authors = []cli.Author{
@@ -29,6 +30,7 @@ func main() {
 			Email: "blp1526@gmail.com",
 		},
 	}
+	app.Copyright = "(c) 2017 Shingo Kawamura"
 
 	app.Flags = []cli.Flag{
 		cli.BoolFlag{
