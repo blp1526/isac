@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/blp1526/isac.svg?branch=travis)](https://travis-ci.org/blp1526/isac)
+
 # isac
 
 Interactive SAKURA Cloud
