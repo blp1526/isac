@@ -2,7 +2,7 @@ package api
 
 import "testing"
 
-func TestClientUrl(t *testing.T) {
+func TestClientURL(t *testing.T) {
 	tests := []struct {
 		zone  string
 		paths []string
@@ -17,7 +17,7 @@ func TestClientUrl(t *testing.T) {
 
 	for _, tt := range tests {
 		client := &Client{}
-		got := client.Url(tt.zone, tt.paths)
+		got := client.URL(tt.zone, tt.paths)
 
 		if got != tt.want {
 			t.Errorf("got: %v, tt.want: %v", got, tt.want)

@@ -10,7 +10,7 @@ import (
 	"github.com/urfave/cli"
 )
 
-const ExitCodeNG = 1
+const exitCodeNG = 1
 
 var unanonymize bool
 var version string
@@ -53,7 +53,7 @@ func main() {
 			Action: func(c *cli.Context) (err error) {
 				err = config.CreateFile(configPath)
 				if err != nil {
-					return cli.NewExitError(fmt.Sprintf("%v", err), ExitCodeNG)
+					return cli.NewExitError(fmt.Sprintf("%v", err), exitCodeNG)
 				}
 				fmt.Printf("%v has been created\n", configPath)
 				return nil
@@ -64,12 +64,12 @@ func main() {
 	app.Action = func(c *cli.Context) (err error) {
 		i, err := isac.New(configPath, unanonymize, zones)
 		if err != nil {
-			return cli.NewExitError(fmt.Sprintf("%v", err), ExitCodeNG)
+			return cli.NewExitError(fmt.Sprintf("%v", err), exitCodeNG)
 		}
 
 		err = i.Run()
 		if err != nil {
-			return cli.NewExitError(fmt.Sprintf("%v", err), ExitCodeNG)
+			return cli.NewExitError(fmt.Sprintf("%v", err), exitCodeNG)
 		}
 
 		return nil
