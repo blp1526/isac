@@ -210,7 +210,7 @@ func (i *Isac) reloadServers() (err error) {
 	i.servers = []server.Server{}
 
 	for _, zone := range i.zones {
-		url := i.client.Url(zone, []string{"server"})
+		url := i.client.URL(zone, []string{"server"})
 
 		statusCode, respBody, err := i.client.Request("GET", url, nil)
 		if err != nil {
@@ -250,7 +250,7 @@ func (i *Isac) currentServerUp() (message string) {
 		return fmt.Sprintf("[WARNING] Server.Name %v is already up", s.Name)
 	}
 
-	url := i.client.Url(s.Zone.Name, []string{"server", s.ID, "power"})
+	url := i.client.URL(s.Zone.Name, []string{"server", s.ID, "power"})
 	statusCode, _, err := i.client.Request("PUT", url, nil)
 
 	if err != nil {

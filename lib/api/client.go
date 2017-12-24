@@ -22,7 +22,7 @@ func NewClient(accessToken string, accessTokenSecret string) *Client {
 	return client
 }
 
-func (client *Client) Url(zone string, paths []string) (url string) {
+func (client *Client) URL(zone string, paths []string) (url string) {
 	scheme := "https://"
 	domain := "secure.sakura.ad.jp"
 	last := strings.Join(paths, "/")

@@ -1,8 +1,9 @@
 [![Build Status](https://travis-ci.org/blp1526/isac.svg?branch=travis)](https://travis-ci.org/blp1526/isac)
+[![Go Report Card](https://goreportcard.com/badge/github.com/blp1526/isac)](https://goreportcard.com/report/github.com/blp1526/isac)
 
 # isac
 
-Interactive SAKURA Cloud
+Interactive [SAKURA Cloud](https://cloud.sakura.ad.jp/)
 
 ## Installation
 
