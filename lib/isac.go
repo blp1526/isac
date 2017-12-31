@@ -84,8 +84,7 @@ MAINLOOP:
 			case termbox.KeyArrowDown, termbox.KeyCtrlN:
 				i.currentRowDown()
 			case termbox.KeyCtrlU:
-				message := i.currentServerUp()
-				i.draw(message)
+				i.currentServerUp()
 			case termbox.KeyCtrlR:
 				i.refresh()
 			case termbox.KeyBackspace2, termbox.KeyCtrlH:
@@ -239,29 +238,36 @@ func (i *Isac) currentNo() int {
 	return i.row.Current + 1 - i.row.HeadersSize()
 }
 
-func (i *Isac) currentServerUp() (message string) {
+func (i *Isac) currentServerUp() {
 	s := i.serverByCurrentRow[i.row.Current]
 
 	if s.ID == "" {
-		return "[ERROR] Current row has no Server"
+		i.draw("[ERROR] Current row has no Server")
+		return
 	}
 
 	if s.Instance.Status == "up" {
-		return fmt.Sprintf("[WARNING] Server.Name %v is already up", s.Name)
+		i.draw(fmt.Sprintf("[WARNING] Server.Name %v is already up", s.Name))
+		return
 	}
 
-	url := i.client.URL(s.Zone.Name, []string{"server", s.ID, "power"})
-	statusCode, _, err := i.client.Request("PUT", url, nil)
+	go func() {
+		url := i.client.URL(s.Zone.Name, []string{"server", s.ID, "power"})
+		statusCode, _, err := i.client.Request("PUT", url, nil)
 
-	if err != nil {
-		return fmt.Sprintf("[ERROR] %v", err)
-	}
+		if err != nil {
+			i.draw(fmt.Sprintf("[ERROR] %v", err))
+			return
+		}
 
-	if statusCode != 200 {
-		return fmt.Sprintf("[ERROR] Request Method: PUT, Request URL: %v, Status Code: %v", url, statusCode)
-	}
+		if statusCode != 200 {
+			i.draw(fmt.Sprintf("[ERROR] Request Method: PUT, Server.Name: %v, Status Code: %v", s.Name, statusCode))
+			return
+		}
 
-	return fmt.Sprintf("Server.Name %v is booting, wait few seconds, and refresh", s.Name)
+		i.draw(fmt.Sprintf("Server.Name %v is booting, wait few seconds, and refresh", s.Name))
+		return
+	}()
 }
 
 func (i *Isac) refresh() {
