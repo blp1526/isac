@@ -158,9 +158,9 @@ func (i *Isac) draw(message string) {
 	sort.Slice(servers, func(x, y int) bool {
 		if i.reverseSort {
 			return servers[x].Instance.Status > servers[y].Instance.Status
-		} else {
-			return servers[x].Instance.Status < servers[y].Instance.Status
 		}
+
+		return servers[x].Instance.Status < servers[y].Instance.Status
 	})
 
 	if i.row.Current == 0 {

@@ -1,5 +1,6 @@
 [![Build Status](https://travis-ci.org/blp1526/isac.svg?branch=travis)](https://travis-ci.org/blp1526/isac)
 [![Go Report Card](https://goreportcard.com/badge/github.com/blp1526/isac)](https://goreportcard.com/report/github.com/blp1526/isac)
+[![GoDoc](https://godoc.org/github.com/blp1526/isac?status.svg)](https://godoc.org/github.com/blp1526/isac)
 
 # isac
 
