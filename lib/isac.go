@@ -137,17 +137,24 @@ func (i *Isac) draw(message string) {
 
 	if i.state.Current == "help" {
 		i.showCurrentRow = false
-		i.setLine(0, fmt.Sprintf("Quick reference for isac keybindings:"))
-		i.setLine(1, fmt.Sprintf(""))
-		i.setLine(2, fmt.Sprintf("<ESC>, <Ctrl-c>        exit"))
-		i.setLine(3, fmt.Sprintf("<Arrow Up>, <Ctrl-p>   move current row up"))
-		i.setLine(4, fmt.Sprintf("<Arrow Down>, <Ctrl-n> move current row down"))
-		i.setLine(5, fmt.Sprintf("<C-u>                  power on current row's server"))
-		i.setLine(6, fmt.Sprintf("<C-r>                  refresh rows"))
-		i.setLine(7, fmt.Sprintf("<BackSpace, C-b>       delete a filter character"))
-		i.setLine(8, fmt.Sprintf("<C-s>                  sort rows"))
-		i.setLine(9, fmt.Sprintf("<C-h>                  show help"))
-		i.setLine(10, fmt.Sprintf("<Enter>                show current row's detail"))
+		lines := []string{
+			"Quick reference for isac keybindings:",
+			"",
+			"<ESC>, <Ctrl-c>        exit",
+			"<Arrow Up>, <Ctrl-p>   move current row up",
+			"<Arrow Down>, <Ctrl-n> move current row down",
+			"<C-u>                  power on current row's server",
+			"<C-r>                  refresh rows",
+			"<BackSpace, C-b>       delete a filter character",
+			"<C-s>                  sort rows",
+			"<C-h>                  show help",
+			"<Enter>                show current row's detail",
+		}
+
+		for index, line := range lines {
+			i.setLine(index, line)
+		}
+
 		termbox.Flush()
 		return
 	}
@@ -156,16 +163,22 @@ func (i *Isac) draw(message string) {
 		i.showCurrentRow = false
 		server := i.serverByCurrentRow[i.row.Current]
 
-		i.setLine(0, fmt.Sprintf("Server.Zone.Name:       %v", server.Zone.Name))
-		i.setLine(1, fmt.Sprintf("Server.Name:            %v", server.Name))
-		i.setLine(2, fmt.Sprintf("Server.Description:     %v", server.Description))
-		i.setLine(3, fmt.Sprintf("Server.InterfaceDriver: %v", server.InterfaceDriver))
-		i.setLine(4, fmt.Sprintf("Server.ServiceClass:    %v", server.ServiceClass))
-		i.setLine(5, fmt.Sprintf("Server.Instance.Status: %v", server.Instance.Status))
-		i.setLine(6, fmt.Sprintf("Server.Availability:    %v", server.Availability))
-		i.setLine(7, fmt.Sprintf("Server.CreatedAt:       %v", server.CreatedAt))
-		i.setLine(8, fmt.Sprintf("Server.ModifiedAt:      %v", server.ModifiedAt))
-		i.setLine(9, fmt.Sprintf("Server.Tags:            %v", server.Tags))
+		lines := []string{
+			fmt.Sprintf("Server.Zone.Name:       %v", server.Zone.Name),
+			fmt.Sprintf("Server.Name:            %v", server.Name),
+			fmt.Sprintf("Server.Description:     %v", server.Description),
+			fmt.Sprintf("Server.InterfaceDriver: %v", server.InterfaceDriver),
+			fmt.Sprintf("Server.ServiceClass:    %v", server.ServiceClass),
+			fmt.Sprintf("Server.Instance.Status: %v", server.Instance.Status),
+			fmt.Sprintf("Server.Availability:    %v", server.Availability),
+			fmt.Sprintf("Server.CreatedAt:       %v", server.CreatedAt),
+			fmt.Sprintf("Server.ModifiedAt:      %v", server.ModifiedAt),
+			fmt.Sprintf("Server.Tags:            %v", server.Tags),
+		}
+
+		for index, line := range lines {
+			i.setLine(index, line)
+		}
 
 		termbox.Flush()
 		return

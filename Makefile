@@ -13,6 +13,7 @@ test: vet
 
 .PHONY: build
 build: test
+	rm -rf dist/
 	mkdir -p dist/
 	go build -o dist/isac
 	@echo
