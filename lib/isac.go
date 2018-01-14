@@ -12,20 +12,24 @@ import (
 	"github.com/blp1526/isac/lib/config"
 	"github.com/blp1526/isac/lib/resource/server"
 	"github.com/blp1526/isac/lib/row"
+	"github.com/blp1526/isac/lib/state"
 	"github.com/mattn/go-runewidth"
 	"github.com/nsf/termbox-go"
 )
 
+const coldef = termbox.ColorDefault
+
 type Isac struct {
-	filter      string
-	client      *api.Client
-	config      *config.Config
-	detail      bool
-	unanonymize bool
-	row         *row.Row
+	filter         string
+	client         *api.Client
+	config         *config.Config
+	showCurrentRow bool
+	unanonymize    bool
+	row            *row.Row
 	// FIXME: wasteful
 	serverByCurrentRow map[int]server.Server
 	servers            []server.Server
+	state              *state.State
 	reverseSort        bool
 	zones              []string
 	message            string
@@ -37,6 +41,8 @@ func New(configPath string, unanonymize bool, zones string) (i *Isac, err error)
 		return i, err
 	}
 
+	state := state.New()
+
 	client := api.NewClient(config.AccessToken, config.AccessTokenSecret)
 	row := row.New()
 
@@ -46,13 +52,14 @@ func New(configPath string, unanonymize bool, zones string) (i *Isac, err error)
 	}
 
 	i = &Isac{
-		client:      client,
-		config:      config,
-		detail:      false,
-		unanonymize: unanonymize,
-		row:         row,
-		zones:       zs,
-		reverseSort: false,
+		client:         client,
+		config:         config,
+		showCurrentRow: true,
+		unanonymize:    unanonymize,
+		row:            row,
+		state:          state,
+		zones:          zs,
+		reverseSort:    false,
 	}
 	return i, nil
 }
@@ -85,15 +92,16 @@ MAINLOOP:
 				i.currentRowDown()
 			case termbox.KeyCtrlU:
 				i.currentServerUp()
-			case termbox.KeyCtrlR:
-				i.refresh()
-			case termbox.KeyBackspace2, termbox.KeyCtrlH:
+			case termbox.KeyCtrlH:
+				i.state.Toggle("help")
+				i.draw("")
+			case termbox.KeyBackspace2, termbox.KeyCtrlB:
 				i.removeRuneFromFilter()
 			case termbox.KeyCtrlS:
 				i.reverseSort = !i.reverseSort
 				i.draw("")
 			case termbox.KeyEnter:
-				i.detail = !i.detail
+				i.state.Toggle("detail")
 				i.draw("")
 			default:
 				if ev.Ch != 0 {
@@ -114,7 +122,7 @@ func (i *Isac) setLine(y int, line string) {
 		fgColor := termbox.ColorDefault
 		bgColor := termbox.ColorDefault
 
-		if !i.detail && i.row.Current == y {
+		if i.showCurrentRow && i.row.Current == y {
 			fgColor = termbox.ColorBlack
 			bgColor = termbox.ColorYellow
 		}
@@ -125,11 +133,29 @@ func (i *Isac) setLine(y int, line string) {
 }
 
 func (i *Isac) draw(message string) {
-	const coldef = termbox.ColorDefault
 	termbox.Clear(coldef, coldef)
 
-	if i.detail {
+	if i.state.Current == "help" {
+		i.showCurrentRow = false
+		i.setLine(0, fmt.Sprintf("Quick reference for isac keybindings:"))
+		i.setLine(1, fmt.Sprintf(""))
+		i.setLine(2, fmt.Sprintf("<ESC>, <Ctrl-c>        exit"))
+		i.setLine(3, fmt.Sprintf("<Arrow Up>, <Ctrl-p>   move current row up"))
+		i.setLine(4, fmt.Sprintf("<Arrow Down>, <Ctrl-n> move current row down"))
+		i.setLine(5, fmt.Sprintf("<C-u>                  power on current row's server"))
+		i.setLine(6, fmt.Sprintf("<C-r>                  refresh rows"))
+		i.setLine(7, fmt.Sprintf("<BackSpace, C-b>       delete a filter character"))
+		i.setLine(8, fmt.Sprintf("<C-s>                  sort rows"))
+		i.setLine(9, fmt.Sprintf("<C-h>                  show help"))
+		i.setLine(10, fmt.Sprintf("<Enter>                show current row's detail"))
+		termbox.Flush()
+		return
+	}
+
+	if i.state.Current == "detail" {
+		i.showCurrentRow = false
 		server := i.serverByCurrentRow[i.row.Current]
+
 		i.setLine(0, fmt.Sprintf("Server.Zone.Name:       %v", server.Zone.Name))
 		i.setLine(1, fmt.Sprintf("Server.Name:            %v", server.Name))
 		i.setLine(2, fmt.Sprintf("Server.Description:     %v", server.Description))
@@ -140,9 +166,12 @@ func (i *Isac) draw(message string) {
 		i.setLine(7, fmt.Sprintf("Server.CreatedAt:       %v", server.CreatedAt))
 		i.setLine(8, fmt.Sprintf("Server.ModifiedAt:      %v", server.ModifiedAt))
 		i.setLine(9, fmt.Sprintf("Server.Tags:            %v", server.Tags))
+
 		termbox.Flush()
 		return
 	}
+
+	i.showCurrentRow = true
 
 	if message != "" {
 		i.message = message
