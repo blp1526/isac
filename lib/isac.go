@@ -92,10 +92,10 @@ MAINLOOP:
 				i.currentRowDown()
 			case termbox.KeyCtrlU:
 				i.currentServerUp()
-			case termbox.KeyCtrlH:
+			case termbox.KeyCtrlSlash:
 				i.state.Toggle("help")
 				i.draw("")
-			case termbox.KeyBackspace2, termbox.KeyCtrlB:
+			case termbox.KeyBackspace2, termbox.KeyCtrlB, termbox.KeyCtrlH:
 				i.removeRuneFromFilter()
 			case termbox.KeyCtrlS:
 				i.reverseSort = !i.reverseSort
@@ -140,15 +140,15 @@ func (i *Isac) draw(message string) {
 		lines := []string{
 			"Quick reference for isac keybindings:",
 			"",
-			"<ESC>, <Ctrl-c>        exit",
-			"<Arrow Up>, <Ctrl-p>   move current row up",
-			"<Arrow Down>, <Ctrl-n> move current row down",
-			"<C-u>                  power on current row's server",
-			"<C-r>                  refresh rows",
-			"<BackSpace, C-b>       delete a filter character",
-			"<C-s>                  sort rows",
-			"<C-h>                  show help",
-			"<Enter>                show current row's detail",
+			"<ESC>, <C-c>            exit",
+			"<Arrow Up>, <C-p>       move current row up",
+			"<Arrow Down>, <C-n>     move current row down",
+			"<C-u>                   power on current row's server",
+			"<C-r>                   refresh rows",
+			"<BackSpace, C-b>, <C-h> delete a filter character",
+			"<C-s>                   sort rows",
+			"<C-/>                   show help",
+			"<Enter>                 show current row's detail",
 		}
 
 		for index, line := range lines {
