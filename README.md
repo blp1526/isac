@@ -37,9 +37,9 @@ $ isac
 |Arrow Down, C-n|move current row down|
 |C-u|power on current row's server|
 |C-r|refresh rows|
-|BackSpace, C-b|delete a filter character|
+|BackSpace, C-b, C-h|delete a filter character|
 |C-s|sort rows|
-|C-h|show help|
+|C-/|show help|
 |Enter|show current row's detail|
 
 ## Options
