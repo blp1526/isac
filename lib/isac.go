@@ -84,7 +84,7 @@ MAINLOOP:
 		switch ev.Type {
 		case termbox.EventKey:
 			switch ev.Key {
-			case termbox.KeyEsc, termbox.KeyCtrlC:
+			case termbox.KeyCtrlC:
 				break MAINLOOP
 			case termbox.KeyArrowUp, termbox.KeyCtrlP:
 				i.currentRowUp()
@@ -140,21 +140,22 @@ func (i *Isac) draw(message string) {
 		lines := []string{
 			"Quick reference for isac keybindings:",
 			"",
-			"<ESC>, <C-c>            exit",
-			"<Arrow Up>, <C-p>       move current row up",
-			"<Arrow Down>, <C-n>     move current row down",
-			"<C-u>                   power on current row's server",
-			"<C-r>                   refresh rows",
-			"<BackSpace, C-b>, <C-h> delete a filter character",
-			"<C-s>                   sort rows",
-			"<C-/>                   show help",
-			"<Enter>                 show current row's detail",
+			"<C-c>                    exit",
+			"<Arrow Up>, <C-p>        move current row up",
+			"<Arrow Down>, <C-n>      move current row down",
+			"<C-u>                    power on current row's server",
+			"<C-r>                    refresh rows",
+			"<BackSpace>, C-b>, <C-h> delete a filter character",
+			"<C-s>                    sort rows",
+			"<C-/>                    show help",
+			"<Enter>                  show current row's detail",
 		}
 
 		for index, line := range lines {
 			i.setLine(index, line)
 		}
 
+		termbox.HideCursor()
 		termbox.Flush()
 		return
 	}
@@ -180,6 +181,7 @@ func (i *Isac) draw(message string) {
 			i.setLine(index, line)
 		}
 
+		termbox.HideCursor()
 		termbox.Flush()
 		return
 	}
@@ -215,6 +217,7 @@ func (i *Isac) draw(message string) {
 	}
 
 	headers := i.row.Headers(i.message, strings.Join(i.zones, ", "), len(servers), i.currentNo(), i.filter)
+	termbox.SetCursor(i.row.CursorX, i.row.CursorY)
 
 	for index, header := range headers {
 		i.setLine(index, header)

@@ -32,7 +32,7 @@ $ isac
 
 |Name|Description|
 |-|-|
-|ESC, C-c|exit|
+|C-c|exit|
 |Arrow Up, C-p|move current row up|
 |Arrow Down, C-n|move current row down|
 |C-u|power on current row's server|
