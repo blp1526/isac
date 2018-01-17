@@ -90,6 +90,8 @@ MAINLOOP:
 				i.currentRowUp()
 			case termbox.KeyArrowDown, termbox.KeyCtrlN:
 				i.currentRowDown()
+			case termbox.KeyCtrlR:
+				i.refresh()
 			case termbox.KeyCtrlU:
 				i.currentServerUp()
 			case termbox.KeyCtrlSlash:
@@ -134,10 +136,12 @@ func (i *Isac) setLine(y int, line string) {
 
 func (i *Isac) draw(message string) {
 	termbox.Clear(coldef, coldef)
+	termbox.HideCursor()
+	i.showCurrentRow = false
+	lines := []string{}
 
 	if i.state.Current == "help" {
-		i.showCurrentRow = false
-		lines := []string{
+		lines = append(lines,
 			"Quick reference for isac keybindings:",
 			"",
 			"<C-c>                    exit",
@@ -149,22 +153,12 @@ func (i *Isac) draw(message string) {
 			"<C-s>                    sort rows",
 			"<C-/>                    show help",
 			"<Enter>                  show current row's detail",
-		}
-
-		for index, line := range lines {
-			i.setLine(index, line)
-		}
-
-		termbox.HideCursor()
-		termbox.Flush()
-		return
+		)
 	}
 
 	if i.state.Current == "detail" {
-		i.showCurrentRow = false
 		server := i.serverByCurrentRow[i.row.Current]
-
-		lines := []string{
+		lines = append(lines,
 			fmt.Sprintf("Server.Zone.Name:       %v", server.Zone.Name),
 			fmt.Sprintf("Server.Name:            %v", server.Name),
 			fmt.Sprintf("Server.Description:     %v", server.Description),
@@ -175,19 +169,18 @@ func (i *Isac) draw(message string) {
 			fmt.Sprintf("Server.CreatedAt:       %v", server.CreatedAt),
 			fmt.Sprintf("Server.ModifiedAt:      %v", server.ModifiedAt),
 			fmt.Sprintf("Server.Tags:            %v", server.Tags),
-		}
+		)
+	}
 
+	if i.state.Current != "" {
 		for index, line := range lines {
 			i.setLine(index, line)
 		}
-
-		termbox.HideCursor()
 		termbox.Flush()
 		return
 	}
 
 	i.showCurrentRow = true
-
 	if message != "" {
 		i.message = message
 	}

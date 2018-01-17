@@ -21,10 +21,12 @@ func New() *Row {
 func (r *Row) Headers(message string, zones string, totalServers int, currentNo int, filter string) (headers []string) {
 	id := fmt.Sprintf("%-12v", "ID")
 
-	headers = append(headers, fmt.Sprintf("isac Message: %v", message))
-	headers = append(headers, fmt.Sprintf("Selected Zones: %v", zones))
-	headers = append(headers, fmt.Sprintf("Total Servers: %v, Current No.: %v", totalServers, currentNo))
-	headers = append(headers, fmt.Sprintf("Filter: %v", filter))
+	headers = append(headers,
+		fmt.Sprintf("isac Message: %v", message),
+		fmt.Sprintf("Selected Zones: %v", zones),
+		fmt.Sprintf("Total Servers: %v, Current No.: %v", totalServers, currentNo),
+		fmt.Sprintf("Filter: %v", filter),
+	)
 
 	r.CursorY = len(headers) - 1
 	runes := []rune(headers[r.CursorY])
@@ -34,9 +36,10 @@ func (r *Row) Headers(message string, zones string, totalServers int, currentNo 
 	}
 	r.CursorX = x
 
-	headers = append(headers, fmt.Sprintf(""))
-	headers = append(headers, fmt.Sprintf("Zone %v Status Name", id))
-
+	headers = append(headers,
+		fmt.Sprintf(""),
+		fmt.Sprintf("Zone %v Status Name", id),
+	)
 	return headers
 }
 
