@@ -38,6 +38,7 @@ $ isac
 |C-u|power on current row's server|
 |C-r|refresh rows|
 |BackSpace, C-b, C-h|delete a filter character|
+|C-a|delete all filter characters|
 |C-s|sort rows|
 |C-/|show help|
 |Enter|show current row's detail|
