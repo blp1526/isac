@@ -97,6 +97,8 @@ MAINLOOP:
 			case termbox.KeyCtrlSlash:
 				i.state.Toggle("help")
 				i.draw("")
+			case termbox.KeyCtrlA:
+				i.removeRuneAllFromFilter()
 			case termbox.KeyBackspace2, termbox.KeyCtrlB, termbox.KeyCtrlH:
 				i.removeRuneFromFilter()
 			case termbox.KeyCtrlS:
@@ -150,6 +152,7 @@ func (i *Isac) draw(message string) {
 			"<C-u>                    power on current row's server",
 			"<C-r>                    refresh rows",
 			"<BackSpace>, C-b>, <C-h> delete a filter character",
+			"<C-a>                    delete all filter characters",
 			"<C-s>                    sort rows",
 			"<C-/>                    show help",
 			"<Enter>                  show current row's detail",
@@ -336,5 +339,10 @@ func (i *Isac) removeRuneFromFilter() {
 		i.filter = string(r[:(len(r) - 1)])
 	}
 
+	i.draw("")
+}
+
+func (i *Isac) removeRuneAllFromFilter() {
+	i.filter = ""
 	i.draw("")
 }
