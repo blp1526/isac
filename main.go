@@ -1,79 +1,19 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 
-	isac "github.com/blp1526/isac/lib"
-	"github.com/blp1526/isac/lib/config"
-	"github.com/urfave/cli"
+	"github.com/blp1526/isac/lib/cmd"
 )
 
-const exitCodeNG = 1
-
-var unanonymize bool
 var version string
-var zones string
 
 func main() {
+	var unanonymize bool
+	var zones string
 	configPath := filepath.Join(os.Getenv("HOME"), ".usacloud", "default", "config.json")
 
-	app := cli.NewApp()
-	app.Name = "isac"
-	app.Version = version
-	app.Usage = "Interactive SAKURA Cloud"
-	app.Version = version
-	app.Authors = []cli.Author{
-		cli.Author{
-			Name:  "Shingo Kawamura",
-			Email: "blp1526@gmail.com",
-		},
-	}
-	app.Copyright = "(c) 2017 Shingo Kawamura"
-
-	app.Flags = []cli.Flag{
-		cli.BoolFlag{
-			Name:        "unanonymize",
-			Usage:       "unanonymize personal data",
-			Destination: &unanonymize,
-		},
-
-		cli.StringFlag{
-			Name:        "zones",
-			Usage:       "set `ZONES` (separated by \",\", example: \"is1a,is1b,tk1a\")",
-			Destination: &zones,
-		},
-	}
-
-	app.Commands = []cli.Command{
-		{
-			Name:  "init",
-			Usage: "Creates config.json",
-			Action: func(c *cli.Context) (err error) {
-				err = config.CreateFile(configPath)
-				if err != nil {
-					return cli.NewExitError(fmt.Sprintf("%v", err), exitCodeNG)
-				}
-				fmt.Printf("%v has been created\n", configPath)
-				return nil
-			},
-		},
-	}
-
-	app.Action = func(c *cli.Context) (err error) {
-		i, err := isac.New(configPath, unanonymize, zones)
-		if err != nil {
-			return cli.NewExitError(fmt.Sprintf("%v", err), exitCodeNG)
-		}
-
-		err = i.Run()
-		if err != nil {
-			return cli.NewExitError(fmt.Sprintf("%v", err), exitCodeNG)
-		}
-
-		return nil
-	}
-
+	app := cmd.NewApp(version, unanonymize, zones, configPath)
 	app.Run(os.Args)
 }
