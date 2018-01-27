@@ -11,8 +11,13 @@ test: vet
 	go test -v --cover ./...
 	@echo
 
+.PHONY: readme
+readme: vet
+	go run _doc/readme.go
+	@echo
+
 .PHONY: build
-build: test
+build: readme
 	rm -rf dist/
 	mkdir -p dist/
 	go build -o dist/isac
