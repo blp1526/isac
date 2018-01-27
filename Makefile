@@ -12,8 +12,8 @@ test: vet
 	@echo
 
 .PHONY: readme
-readme: vet
-	go run _doc/readme.go
+readme: test
+	go run _generator/readme.go
 	@echo
 
 .PHONY: build

@@ -48,7 +48,8 @@ $ isac
 
 |Option|Description|
 |-|-|
-|--unanonymize|unanonymize personal data|
-|--zones ZONES|set ZONES (separated by ",", example: "is1a,is1b,tk1a")|
-|--help, -h|show help|
-|--version, -v|print the version|
+|help, h|show help|
+|version, v|print the version|
+|unanonymize|unanonymize personal data|
+|zones|set `ZONES` (separated by ",", example: "is1a,is1b,tk1a")|
+
