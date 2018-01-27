@@ -10,6 +10,7 @@ import (
 
 	"github.com/blp1526/isac/lib/api"
 	"github.com/blp1526/isac/lib/config"
+	"github.com/blp1526/isac/lib/keybinding"
 	"github.com/blp1526/isac/lib/resource/server"
 	"github.com/blp1526/isac/lib/row"
 	"github.com/blp1526/isac/lib/state"
@@ -146,17 +147,11 @@ func (i *Isac) draw(message string) {
 		lines = append(lines,
 			"Quick reference for isac keybindings:",
 			"",
-			"<C-c>                    exit",
-			"<Arrow Up>, <C-p>        move current row up",
-			"<Arrow Down>, <C-n>      move current row down",
-			"<C-u>                    power on current row's server",
-			"<C-r>                    refresh rows",
-			"<BackSpace>, C-b>, <C-h> delete a filter character",
-			"<C-a>                    delete all filter characters",
-			"<C-s>                    sort rows",
-			"<C-/>                    show help",
-			"<Enter>                  show current row's detail",
 		)
+
+		for _, k := range keybinding.Keybindings() {
+			lines = append(lines, fmt.Sprintf("%s %s", k.Keys, k.Desc))
+		}
 	}
 
 	if i.state.Current == "detail" {
