@@ -31,7 +31,7 @@ $ isac
 ## Keybindings
 
 |Keys|Description|
-|-|-|
+|---|---|
 |C-c                |exit|
 |Arrow Up, C-p      |move current row up|
 |Arrow Down, C-n    |move current row down|
@@ -47,7 +47,7 @@ $ isac
 ## Options
 
 |Option|Description|
-|-|-|
+|---|---|
 |help, h|show help|
 |version, v|print the version|
 |unanonymize|unanonymize personal data|
