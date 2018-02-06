@@ -31,7 +31,7 @@ $ isac
 ## Keybindings
 
 |Keys|Description|
-|-|-|
+|---|---|
 {{ range .Keybindings -}}
 |{{.Keys}}|{{.Desc}}|
 {{end}}
@@ -39,7 +39,7 @@ $ isac
 ## Options
 
 |Option|Description|
-|-|-|
+|---|---|
 |help, h|show help|
 |version, v|print the version|
 {{ range .Options -}}
