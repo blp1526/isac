@@ -3,7 +3,12 @@ all: build
 
 .PHONY: gometalinter
 gometalinter:
-	gometalinter --vendor --skip vendor --disable-all --enable vet --enable golint --enable goimports  ./...
+	gometalinter --vendor --skip vendor --disable-all \
+		--enable vet \
+		--enable gofmt \
+		--enable golint \
+		--enable goimports \
+		./...
 	@echo
 
 .PHONY: test
