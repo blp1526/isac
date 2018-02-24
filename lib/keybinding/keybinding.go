@@ -6,6 +6,7 @@ type Keybinding struct {
 	Desc string
 }
 
+// Keybindings returns this TUI tool's keybindings.
 func Keybindings() []Keybinding {
 	return []Keybinding{
 		{Keys: "C-c                ", Desc: "exit"},

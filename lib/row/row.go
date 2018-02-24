@@ -6,6 +6,7 @@ import (
 	runewidth "github.com/mattn/go-runewidth"
 )
 
+// Row shows this TUI tool's row status.
 type Row struct {
 	MovableBottom int
 	Current       int
@@ -13,11 +14,13 @@ type Row struct {
 	CursorY       int
 }
 
+// New initializes *Row.
 func New() *Row {
 	r := &Row{}
 	return r
 }
 
+// Headers returns this TUI tool's headers.
 func (r *Row) Headers(message string, zones string, totalServers int, currentNo int, filter string) (headers []string) {
 	id := fmt.Sprintf("%-12v", "ID")
 
@@ -43,6 +46,7 @@ func (r *Row) Headers(message string, zones string, totalServers int, currentNo 
 	return headers
 }
 
+// HeadersSize shows headers size.
 func (r *Row) HeadersSize() (headersSize int) {
 	headersSize = len(r.Headers("", "", 0, 0, ""))
 	return headersSize

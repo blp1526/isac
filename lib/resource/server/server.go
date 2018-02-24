@@ -4,11 +4,13 @@ import (
 	"fmt"
 )
 
-type ServerCollection struct {
+// Collection shows Server's collection.
+type Collection struct {
 	Count   int      `json:"Count,omitempty"`
 	Servers []Server `json:"Servers,omitempty"`
 }
 
+// Server shows GET /server/:id attributes.
 type Server struct {
 	Availability    string   `json:"Availability,omitempty"`
 	CreatedAt       string   `json:"CreatedAt,omitempty"`
@@ -23,19 +25,23 @@ type Server struct {
 	Zone            Zone     `json:"Zone,omitempty"`
 }
 
+// Instance shows Server.Instance.
 type Instance struct {
 	Status string `json:"Status,omitempty"`
 }
 
+// Zone shows Server.Zone.
 type Zone struct {
 	Name string `json:"Name,omitempty"`
 }
 
-func NewCollection(zone string) *ServerCollection {
-	s := &ServerCollection{}
+// NewCollection initializes *Collection.
+func NewCollection(zone string) *Collection {
+	s := &Collection{}
 	return s
 }
 
+// New initializes *Server.
 func New() *Server {
 	s := &Server{}
 	return s

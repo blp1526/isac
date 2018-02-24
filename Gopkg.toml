@@ -26,3 +26,4 @@
 
 [[constraint]]
   name = "github.com/nsf/termbox-go"
+  revision = "aa4a75b1c20a2b03751b1a9f7e41d58bd6f71c43"
