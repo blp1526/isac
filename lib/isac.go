@@ -2,7 +2,6 @@ package isac
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"sort"
 	"strings"
@@ -20,6 +19,7 @@ import (
 
 const coldef = termbox.ColorDefault
 
+// Isac is this TUI tool's fundamental struct.
 type Isac struct {
 	filter         string
 	client         *api.Client
@@ -36,6 +36,7 @@ type Isac struct {
 	message            string
 }
 
+// New initializes *Isac.
 func New(configPath string, unanonymize bool, zones string) (i *Isac, err error) {
 	config, err := config.New(configPath)
 	if err != nil {
@@ -65,6 +66,7 @@ func New(configPath string, unanonymize bool, zones string) (i *Isac, err error)
 	return i, nil
 }
 
+// Run executes this TUI tool's main logic.
 func (i *Isac) Run() (err error) {
 	err = i.reloadServers()
 	if err != nil {
@@ -227,7 +229,7 @@ func (i *Isac) draw(message string) {
 
 func (i *Isac) currentRowUp() {
 	if i.row.Current > i.row.HeadersSize() {
-		i.row.Current -= 1
+		i.row.Current--
 	}
 
 	i.draw("")
@@ -235,7 +237,7 @@ func (i *Isac) currentRowUp() {
 
 func (i *Isac) currentRowDown() {
 	if i.row.Current < i.row.MovableBottom {
-		i.row.Current += 1
+		i.row.Current++
 	}
 
 	i.draw("")
@@ -253,7 +255,7 @@ func (i *Isac) reloadServers() (err error) {
 		}
 
 		if statusCode != 200 {
-			return errors.New(fmt.Sprintf("Request Method: GET, Request URL: %v, Status Code: %v", url, statusCode))
+			return fmt.Errorf("Request Method: GET, Request URL: %v, Status Code: %v", url, statusCode)
 		}
 
 		sc := server.NewCollection(zone)

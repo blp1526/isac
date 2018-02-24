@@ -8,6 +8,7 @@ import (
 	"github.com/urfave/cli"
 )
 
+// NewApp initializes *cli.App.
 func NewApp(version string, unanonymize bool, zones string, configPath string) *cli.App {
 	const exitCodeNG = 1
 

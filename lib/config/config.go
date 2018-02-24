@@ -8,12 +8,14 @@ import (
 	"path/filepath"
 )
 
+// Config shows API client config.
 type Config struct {
 	AccessToken       string `json:"AccessToken,omitempty"`
 	AccessTokenSecret string `json:"AccessTokenSecret,omitempty"`
 	Zone              string `json:"Zone,omitempty"`
 }
 
+// New initializes *Config.
 func New(configPath string) (config *Config, err error) {
 	config = &Config{}
 
@@ -26,6 +28,7 @@ func New(configPath string) (config *Config, err error) {
 	return config, err
 }
 
+// CreateFile creates a config file.
 func CreateFile(dir string) (err error) {
 	config := &Config{
 		AccessToken:       "Write your AccessToken",

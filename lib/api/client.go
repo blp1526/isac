@@ -9,11 +9,13 @@ import (
 	"time"
 )
 
+// Client shows SAKURA Cloud API client.
 type Client struct {
 	AccessToken       string
 	AccessTokenSecret string
 }
 
+// NewClient initializes *Client.
 func NewClient(accessToken string, accessTokenSecret string) *Client {
 	client := &Client{
 		AccessToken:       accessToken,
@@ -22,6 +24,7 @@ func NewClient(accessToken string, accessTokenSecret string) *Client {
 	return client
 }
 
+// URL creates an API endpoint.
 func (client *Client) URL(zone string, paths []string) (url string) {
 	scheme := "https://"
 	domain := "secure.sakura.ad.jp"
@@ -31,6 +34,7 @@ func (client *Client) URL(zone string, paths []string) (url string) {
 	return url
 }
 
+// Request creates an API request.
 func (client *Client) Request(method string, url string, params []byte) (statusCode int, respBody []byte, err error) {
 	req, err := http.NewRequest(method, url, bytes.NewBuffer(params))
 	if err != nil {
