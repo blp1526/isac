@@ -16,7 +16,6 @@ func NewApp(version string, unanonymize bool, zones string, configPath string) *
 	app.Name = "isac"
 	app.Version = version
 	app.Usage = "Interactive SAKURA Cloud"
-	app.Version = version
 	app.Authors = []cli.Author{
 		{
 			Name:  "Shingo Kawamura",
