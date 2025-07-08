@@ -1,18 +1,14 @@
 .PHONY: all
 all: build
 
-.PHONY: gometalinter
-gometalinter:
-	gometalinter --vendor --skip vendor --disable-all \
-		--enable vet \
-		--enable gofmt \
-		--enable golint \
-		--enable goimports \
-		./...
+.PHONY: lint
+lint:
+	go vet ./...
+	gofmt -l .
 	@echo
 
 .PHONY: test
-test: gometalinter
+test: lint
 	go test -v --cover ./...
 	@echo
 
