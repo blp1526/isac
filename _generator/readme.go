@@ -7,7 +7,7 @@ import (
 
 	"github.com/blp1526/isac/lib/cmd"
 	"github.com/blp1526/isac/lib/keybinding"
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v3"
 )
 
 func main() {
@@ -24,7 +24,7 @@ func main() {
 		Options     []cli.Flag
 	}{
 		Keybindings: keybinding.Keybindings(),
-		Options:     cmd.NewApp("", false, "", "").Flags,
+		Options:     cmd.NewCommand("", "").Flags,
 	}
 
 	err = tmpl.Execute(f, data)

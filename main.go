@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+	"log"
 	"os"
 	"path/filepath"
 
@@ -10,10 +12,10 @@ import (
 var version string
 
 func main() {
-	var unanonymize bool
-	var zones string
 	configPath := filepath.Join(os.Getenv("HOME"), ".usacloud", "default", "config.json")
 
-	app := cmd.NewApp(version, unanonymize, zones, configPath)
-	app.Run(os.Args)
+	command := cmd.NewCommand(version, configPath)
+	if err := command.Run(context.Background(), os.Args); err != nil {
+		log.Fatal(err)
+	}
 }
