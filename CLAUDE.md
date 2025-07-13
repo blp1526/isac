@@ -25,13 +25,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### Core Components
 - **main.go**: Entry point using urfave/cli v3 Command-based architecture with context.Context
 - **lib/cmd/cmd.go**: CLI application setup using urfave/cli/v3 library with NewCommand() function
-- **lib/isac.go**: Main TUI application logic with termbox-based interface
+- **lib/isac.go**: Main TUI application logic using Bubble Tea's Model-View-Update (MVU) pattern
 - **lib/api/client.go**: HTTP client for SAKURA Cloud API interactions
 - **lib/config/config.go**: Configuration management for API credentials and zones
 
 ### TUI Framework
-- Uses `termbox-go` for terminal UI rendering
-- Main event loop handles keyboard input and screen updates
+- Uses **Bubble Tea** for modern terminal UI rendering (migrated from deprecated termbox-go)
+- Follows **Model-View-Update (MVU)** pattern with functional event handling
+- **Lipgloss** for styling and colors
 - Key components:
   - **lib/row/row.go**: Row management and cursor positioning
   - **lib/state/state.go**: Application state management (help, detail views)
@@ -61,6 +62,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### Modern Go Practices
 - **Go Modules**: Uses go.mod instead of legacy dep/Gopkg.toml
 - **urfave/cli v3**: Modern Command-based CLI architecture with context.Context support
+- **Bubble Tea**: Modern TUI framework using MVU pattern (replaced deprecated termbox-go)
 - **Standard Tooling**: Uses `go vet` and `gofmt` instead of deprecated gometalinter
 
 ### Configuration
@@ -73,8 +75,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Test files follow `*_test.go` naming convention
 - Uses standard Go testing framework
 
-### CLI Framework Migration Notes
-- Migrated from urfave/cli v1 → v2 → v3
-- v3 uses `&cli.Command{}` instead of `cli.NewApp()`
-- Action functions now receive `context.Context` as first parameter
-- Authors field expects string format: `"Name <email>"`
+### Framework Migration Notes
+- **CLI Framework**: Migrated from urfave/cli v1 → v2 → v3
+  - v3 uses `&cli.Command{}` instead of `cli.NewApp()`
+  - Action functions now receive `context.Context` as first parameter
+  - Authors field expects string format: `"Name <email>"`
+- **TUI Framework**: Migrated from termbox-go → Bubble Tea
+  - Replaced imperative event loop with functional MVU pattern
+  - Uses `tea.Model` interface with `Init()`, `Update()`, and `View()` methods
+  - Async operations handled via `tea.Cmd` and custom message types
+  - Styling with Lipgloss instead of direct terminal color codes

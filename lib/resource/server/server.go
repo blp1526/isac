@@ -47,12 +47,7 @@ func New() *Server {
 	return s
 }
 
-func (s *Server) String(unanonymize bool) string {
-	id := "************"
-	if unanonymize {
-		id = s.ID
-	}
-
+func (s *Server) String() string {
 	status := fmt.Sprintf("%6v", s.Instance.Status)
-	return fmt.Sprintf("%v %v %v %v", s.Zone.Name, id, status, s.Name)
+	return fmt.Sprintf("%v %v %v %v", s.Zone.Name, s.ID, status, s.Name)
 }
