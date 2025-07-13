@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"sort"
 	"strings"
-	"unicode/utf8"
 
 	"github.com/blp1526/isac/lib/api"
 	"github.com/blp1526/isac/lib/config"
@@ -13,19 +12,16 @@ import (
 	"github.com/blp1526/isac/lib/resource/server"
 	"github.com/blp1526/isac/lib/row"
 	"github.com/blp1526/isac/lib/state"
-	"github.com/mattn/go-runewidth"
-	"github.com/nsf/termbox-go"
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
-const coldef = termbox.ColorDefault
-
-// Isac is this TUI tool's fundamental struct.
-type Isac struct {
+// Model represents the state of the application following Bubble Tea's MVU pattern
+type Model struct {
 	filter         string
 	client         *api.Client
 	config         *config.Config
 	showCurrentRow bool
-	unanonymize    bool
 	row            *row.Row
 	// FIXME: wasteful
 	serverByCurrentRow map[int]server.Server
@@ -34,17 +30,213 @@ type Isac struct {
 	reverseSort        bool
 	zones              []string
 	message            string
+	ready              bool
+	width              int
+	height             int
 }
 
-// New initializes *Isac.
-func New(configPath string, unanonymize bool, zones string) (i *Isac, err error) {
+// serverUpdateMsg is used to update servers in the background
+type serverUpdateMsg struct {
+	servers []server.Server
+	err     error
+}
+
+// statusMsg is used to show status messages
+type statusMsg string
+
+// Init is called when the program starts
+func (m Model) Init() tea.Cmd {
+	return m.loadServers()
+}
+
+// Update handles messages and updates the model
+func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		m.width = msg.Width
+		m.height = msg.Height
+		m.ready = true
+		return m, nil
+
+	case tea.KeyMsg:
+		switch msg.String() {
+		case "ctrl+c", "q":
+			return m, tea.Quit
+
+		case "up", "ctrl+p":
+			m.currentRowUp()
+			return m, nil
+
+		case "down", "ctrl+n":
+			m.currentRowDown()
+			return m, nil
+
+		case "ctrl+r":
+			return m, m.loadServers()
+
+		case "ctrl+u":
+			return m, m.currentServerUp()
+
+		case "ctrl+/":
+			m.state.Toggle("help")
+			return m, nil
+
+		case "ctrl+a":
+			m.removeRuneAllFromFilter()
+			return m, nil
+
+		case "backspace", "ctrl+b", "ctrl+h":
+			m.removeRuneFromFilter()
+			return m, nil
+
+		case "ctrl+s":
+			m.reverseSort = !m.reverseSort
+			return m, nil
+
+		case "enter":
+			m.state.Toggle("detail")
+			return m, nil
+
+		default:
+			// Handle text input for filtering
+			if len(msg.Runes) > 0 {
+				m.addRuneToFilter(msg.Runes[0])
+			}
+			return m, nil
+		}
+
+	case serverUpdateMsg:
+		if msg.err != nil {
+			m.message = fmt.Sprintf("[ERROR] %v", msg.err)
+		} else {
+			m.servers = msg.servers
+			m.message = "Servers have been refreshed"
+		}
+		return m, nil
+
+	case statusMsg:
+		m.message = string(msg)
+		return m, nil
+	}
+
+	return m, nil
+}
+
+// View renders the interface
+func (m Model) View() string {
+	if !m.ready {
+		return "Loading..."
+	}
+
+	var content string
+
+	// Show help screen
+	if m.state.Current == "help" {
+		lines := []string{
+			"Quick reference for isac keybindings:",
+			"",
+		}
+		for _, k := range keybinding.Keybindings() {
+			lines = append(lines, fmt.Sprintf("%s %s", k.Keys, k.Desc))
+		}
+		content = strings.Join(lines, "\n")
+		return content
+	}
+
+	// Show detail screen
+	if m.state.Current == "detail" {
+		if server, exists := m.serverByCurrentRow[m.row.Current]; exists {
+			lines := []string{
+				fmt.Sprintf("Server.Zone.Name:       %v", server.Zone.Name),
+				fmt.Sprintf("Server.Name:            %v", server.Name),
+				fmt.Sprintf("Server.Description:     %v", server.Description),
+				fmt.Sprintf("Server.InterfaceDriver: %v", server.InterfaceDriver),
+				fmt.Sprintf("Server.ServiceClass:    %v", server.ServiceClass),
+				fmt.Sprintf("Server.Instance.Status: %v", server.Instance.Status),
+				fmt.Sprintf("Server.Availability:    %v", server.Availability),
+				fmt.Sprintf("Server.CreatedAt:       %v", server.CreatedAt),
+				fmt.Sprintf("Server.ModifiedAt:      %v", server.ModifiedAt),
+				fmt.Sprintf("Server.Tags:            %v", server.Tags),
+			}
+			content = strings.Join(lines, "\n")
+			return content
+		}
+	}
+
+	// Main view - server list
+	m.showCurrentRow = true
+
+	// Filter servers
+	var filteredServers []server.Server
+	for _, s := range m.servers {
+		if strings.Contains(s.Name, m.filter) {
+			filteredServers = append(filteredServers, s)
+		}
+	}
+
+	// Sort servers
+	sort.Slice(filteredServers, func(x, y int) bool {
+		if m.reverseSort {
+			return filteredServers[x].Instance.Status > filteredServers[y].Instance.Status
+		}
+		return filteredServers[x].Instance.Status < filteredServers[y].Instance.Status
+	})
+
+	// Update current row bounds
+	if m.row.Current == 0 {
+		m.row.Current = m.row.HeadersSize()
+	}
+	m.row.MovableBottom = len(filteredServers) + m.row.HeadersSize() - 1
+	if m.row.Current > m.row.MovableBottom {
+		m.row.Current = m.row.HeadersSize()
+	}
+
+	// Build headers
+	headers := m.row.Headers(m.message, strings.Join(m.zones, ", "), len(filteredServers), m.currentNo(), m.filter)
+
+	// Build server list
+	var lines []string
+	lines = append(lines, headers...)
+
+	m.serverByCurrentRow = map[int]server.Server{}
+
+	// Style for current row
+	currentRowStyle := lipgloss.NewStyle().
+		Background(lipgloss.Color("11")).
+		Foreground(lipgloss.Color("0"))
+
+	for index, server := range filteredServers {
+		currentRow := index + m.row.HeadersSize()
+		line := server.String()
+
+		// Highlight current row
+		if m.showCurrentRow && m.row.Current == currentRow {
+			line = currentRowStyle.Render(line)
+		}
+
+		lines = append(lines, line)
+		m.serverByCurrentRow[currentRow] = server
+	}
+
+	content = strings.Join(lines, "\n")
+
+	// Ensure we don't exceed terminal height
+	if len(lines) > m.height-1 {
+		lines = lines[:m.height-1]
+		content = strings.Join(lines, "\n")
+	}
+
+	return content
+}
+
+// New initializes a new Model
+func New(configPath string, zones string) (*Model, error) {
 	config, err := config.New(configPath)
 	if err != nil {
-		return i, err
+		return nil, err
 	}
 
 	state := state.New()
-
 	client := api.NewClient(config.AccessToken, config.AccessTokenSecret)
 	row := row.New()
 
@@ -53,293 +245,122 @@ func New(configPath string, unanonymize bool, zones string) (i *Isac, err error)
 		zs = strings.Split(zones, ",")
 	}
 
-	i = &Isac{
+	model := &Model{
 		client:         client,
 		config:         config,
 		showCurrentRow: true,
-		unanonymize:    unanonymize,
 		row:            row,
 		state:          state,
 		zones:          zs,
 		reverseSort:    false,
 	}
-	return i, nil
+
+	return model, nil
 }
 
-// Run executes this TUI tool's main logic.
-func (i *Isac) Run() (err error) {
-	err = i.reloadServers()
-	if err != nil {
-		return err
+// Run starts the Bubble Tea program
+func (m *Model) Run() error {
+	p := tea.NewProgram(m, tea.WithAltScreen())
+	_, err := p.Run()
+	return err
+}
+
+// Helper methods
+
+func (m *Model) currentRowUp() {
+	if m.row.Current > m.row.HeadersSize() {
+		m.row.Current--
 	}
+}
 
-	err = termbox.Init()
-	if err != nil {
-		return err
+func (m *Model) currentRowDown() {
+	if m.row.Current < m.row.MovableBottom {
+		m.row.Current++
 	}
+}
 
-	defer termbox.Close()
-	i.draw("OK")
+func (m *Model) currentNo() int {
+	return m.row.Current + 1 - m.row.HeadersSize()
+}
 
-MAINLOOP:
-	for {
-		ev := termbox.PollEvent()
-		switch ev.Type {
-		case termbox.EventKey:
-			switch ev.Key {
-			case termbox.KeyCtrlC:
-				break MAINLOOP
-			case termbox.KeyArrowUp, termbox.KeyCtrlP:
-				i.currentRowUp()
-			case termbox.KeyArrowDown, termbox.KeyCtrlN:
-				i.currentRowDown()
-			case termbox.KeyCtrlR:
-				i.refresh()
-			case termbox.KeyCtrlU:
-				i.currentServerUp()
-			case termbox.KeyCtrlSlash:
-				i.state.Toggle("help")
-				i.draw("")
-			case termbox.KeyCtrlA:
-				i.removeRuneAllFromFilter()
-			case termbox.KeyBackspace2, termbox.KeyCtrlB, termbox.KeyCtrlH:
-				i.removeRuneFromFilter()
-			case termbox.KeyCtrlS:
-				i.reverseSort = !i.reverseSort
-				i.draw("")
-			case termbox.KeyEnter:
-				i.state.Toggle("detail")
-				i.draw("")
-			default:
-				if ev.Ch != 0 {
-					i.addRuneToFilter(ev.Ch)
+func (m *Model) addRuneToFilter(r rune) {
+	m.filter = m.filter + string(r)
+}
+
+func (m *Model) removeRuneFromFilter() {
+	r := []rune(m.filter)
+	if len(r) > 0 {
+		m.filter = string(r[:(len(r) - 1)])
+	}
+}
+
+func (m *Model) removeRuneAllFromFilter() {
+	m.filter = ""
+}
+
+// loadServers returns a command to load servers from the API
+func (m Model) loadServers() tea.Cmd {
+	return func() tea.Msg {
+		var servers []server.Server
+
+		for _, zone := range m.zones {
+			url := m.client.URL(zone, []string{"server"})
+
+			statusCode, respBody, err := m.client.Request("GET", url, nil)
+			if err != nil {
+				return serverUpdateMsg{servers: nil, err: err}
+			}
+
+			if statusCode != 200 {
+				return serverUpdateMsg{
+					servers: nil,
+					err:     fmt.Errorf("Request Method: GET, Request URL: %v, Status Code: %v", url, statusCode),
 				}
 			}
-		default:
-			i.draw("")
-		}
-	}
-	return nil
-}
 
-func (i *Isac) setLine(y int, line string) {
-	runes := []rune(line)
-	x := 0
-	for _, r := range runes {
-		fgColor := termbox.ColorDefault
-		bgColor := termbox.ColorDefault
+			sc := server.NewCollection(zone)
+			err = json.Unmarshal(respBody, sc)
+			if err != nil {
+				return serverUpdateMsg{servers: nil, err: err}
+			}
 
-		if i.showCurrentRow && i.row.Current == y {
-			fgColor = termbox.ColorBlack
-			bgColor = termbox.ColorYellow
+			for _, s := range sc.Servers {
+				servers = append(servers, s)
+			}
 		}
 
-		termbox.SetCell(x, y, r, fgColor, bgColor)
-		x += runewidth.RuneWidth(r)
+		return serverUpdateMsg{servers: servers, err: nil}
 	}
 }
 
-func (i *Isac) draw(message string) {
-	termbox.Clear(coldef, coldef)
-	termbox.HideCursor()
-	i.showCurrentRow = false
-	lines := []string{}
-
-	if i.state.Current == "help" {
-		lines = append(lines,
-			"Quick reference for isac keybindings:",
-			"",
-		)
-
-		for _, k := range keybinding.Keybindings() {
-			lines = append(lines, fmt.Sprintf("%s %s", k.Keys, k.Desc))
-		}
-	}
-
-	if i.state.Current == "detail" {
-		server := i.serverByCurrentRow[i.row.Current]
-		lines = append(lines,
-			fmt.Sprintf("Server.Zone.Name:       %v", server.Zone.Name),
-			fmt.Sprintf("Server.Name:            %v", server.Name),
-			fmt.Sprintf("Server.Description:     %v", server.Description),
-			fmt.Sprintf("Server.InterfaceDriver: %v", server.InterfaceDriver),
-			fmt.Sprintf("Server.ServiceClass:    %v", server.ServiceClass),
-			fmt.Sprintf("Server.Instance.Status: %v", server.Instance.Status),
-			fmt.Sprintf("Server.Availability:    %v", server.Availability),
-			fmt.Sprintf("Server.CreatedAt:       %v", server.CreatedAt),
-			fmt.Sprintf("Server.ModifiedAt:      %v", server.ModifiedAt),
-			fmt.Sprintf("Server.Tags:            %v", server.Tags),
-		)
-	}
-
-	if i.state.Current != "" {
-		for index, line := range lines {
-			i.setLine(index, line)
-		}
-		termbox.Flush()
-		return
-	}
-
-	i.showCurrentRow = true
-	if message != "" {
-		i.message = message
-	}
-
-	var servers []server.Server
-	for _, s := range i.servers {
-		if strings.Contains(s.Name, i.filter) {
-			servers = append(servers, s)
-		}
-	}
-
-	sort.Slice(servers, func(x, y int) bool {
-		if i.reverseSort {
-			return servers[x].Instance.Status > servers[y].Instance.Status
-		}
-
-		return servers[x].Instance.Status < servers[y].Instance.Status
-	})
-
-	if i.row.Current == 0 {
-		i.row.Current = i.row.HeadersSize()
-	}
-
-	i.row.MovableBottom = len(servers) + i.row.HeadersSize() - 1
-	if i.row.Current > i.row.MovableBottom {
-		i.row.Current = i.row.HeadersSize()
-	}
-
-	headers := i.row.Headers(i.message, strings.Join(i.zones, ", "), len(servers), i.currentNo(), i.filter)
-	termbox.SetCursor(i.row.CursorX, i.row.CursorY)
-
-	for index, header := range headers {
-		i.setLine(index, header)
-	}
-
-	i.serverByCurrentRow = map[int]server.Server{}
-
-	for index, server := range servers {
-		currentRow := index + i.row.HeadersSize()
-		i.setLine(currentRow, server.String(i.unanonymize))
-		i.serverByCurrentRow[currentRow] = server
-	}
-
-	termbox.Flush()
-}
-
-func (i *Isac) currentRowUp() {
-	if i.row.Current > i.row.HeadersSize() {
-		i.row.Current--
-	}
-
-	i.draw("")
-}
-
-func (i *Isac) currentRowDown() {
-	if i.row.Current < i.row.MovableBottom {
-		i.row.Current++
-	}
-
-	i.draw("")
-}
-
-func (i *Isac) reloadServers() (err error) {
-	i.servers = []server.Server{}
-
-	for _, zone := range i.zones {
-		url := i.client.URL(zone, []string{"server"})
-
-		statusCode, respBody, err := i.client.Request("GET", url, nil)
-		if err != nil {
-			return err
-		}
-
-		if statusCode != 200 {
-			return fmt.Errorf("Request Method: GET, Request URL: %v, Status Code: %v", url, statusCode)
-		}
-
-		sc := server.NewCollection(zone)
-		err = json.Unmarshal(respBody, sc)
-		if err != nil {
-			return err
-		}
-
-		for _, s := range sc.Servers {
-			i.servers = append(i.servers, s)
-		}
-	}
-
-	return nil
-}
-
-func (i *Isac) currentNo() int {
-	return i.row.Current + 1 - i.row.HeadersSize()
-}
-
-func (i *Isac) currentServerUp() {
-	s := i.serverByCurrentRow[i.row.Current]
+// currentServerUp returns a command to power on the current server
+func (m Model) currentServerUp() tea.Cmd {
+	s := m.serverByCurrentRow[m.row.Current]
 
 	if s.ID == "" {
-		i.draw("[ERROR] Current row has no Server")
-		return
+		return func() tea.Msg {
+			return statusMsg("[ERROR] Current row has no Server")
+		}
 	}
 
 	if s.Instance.Status == "up" {
-		i.draw(fmt.Sprintf("[WARNING] Server.Name %v is already up", s.Name))
-		return
+		return func() tea.Msg {
+			return statusMsg(fmt.Sprintf("[WARNING] Server.Name %v is already up", s.Name))
+		}
 	}
 
-	go func() {
-		url := i.client.URL(s.Zone.Name, []string{"server", s.ID, "power"})
-		statusCode, _, err := i.client.Request("PUT", url, nil)
+	return func() tea.Msg {
+		url := m.client.URL(s.Zone.Name, []string{"server", s.ID, "power"})
+		statusCode, _, err := m.client.Request("PUT", url, nil)
 
 		if err != nil {
-			i.draw(fmt.Sprintf("[ERROR] %v", err))
-			return
+			return statusMsg(fmt.Sprintf("[ERROR] %v", err))
 		}
 
 		if statusCode != 200 {
-			i.draw(fmt.Sprintf("[ERROR] Request Method: PUT, Server.Name: %v, Status Code: %v", s.Name, statusCode))
-			return
+			return statusMsg(fmt.Sprintf("[ERROR] Request Method: PUT, Server.Name: %v, Status Code: %v", s.Name, statusCode))
 		}
 
-		i.draw(fmt.Sprintf("Server.Name %v is booting, wait few seconds, and refresh", s.Name))
-		return
-	}()
-}
-
-func (i *Isac) refresh() {
-	var message string
-
-	err := i.reloadServers()
-	if err != nil {
-		message = fmt.Sprintf("[ERROR] %v", err)
+		return statusMsg(fmt.Sprintf("Server.Name %v is booting, wait few seconds, and refresh", s.Name))
 	}
-
-	if message == "" {
-		message = "Servers have been refreshed"
-	}
-
-	i.draw(message)
-}
-
-func (i *Isac) addRuneToFilter(r rune) {
-	var buf [utf8.UTFMax]byte
-	n := utf8.EncodeRune(buf[:], r)
-	i.filter = i.filter + string(buf[:n])
-	i.draw("")
-}
-
-func (i *Isac) removeRuneFromFilter() {
-	r := []rune(i.filter)
-	if len(r) > 0 {
-		i.filter = string(r[:(len(r) - 1)])
-	}
-
-	i.draw("")
-}
-
-func (i *Isac) removeRuneAllFromFilter() {
-	i.filter = ""
-	i.draw("")
 }

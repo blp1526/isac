@@ -13,7 +13,6 @@ import (
 func NewCommand(version string, configPath string) *cli.Command {
 	const exitCodeNG = 1
 
-	var unanonymize bool
 	var zones string
 
 	cmd := &cli.Command{
@@ -25,11 +24,6 @@ func NewCommand(version string, configPath string) *cli.Command {
 		},
 		Copyright: "(c) 2017 Shingo Kawamura",
 		Flags: []cli.Flag{
-			&cli.BoolFlag{
-				Name:        "unanonymize",
-				Usage:       "unanonymize personal data",
-				Destination: &unanonymize,
-			},
 			&cli.StringFlag{
 				Name:        "zones",
 				Usage:       "set `ZONES` (separated by \",\", example: \"is1a,is1b,tk1a\")",
@@ -51,7 +45,7 @@ func NewCommand(version string, configPath string) *cli.Command {
 			},
 		},
 		Action: func(ctx context.Context, cmd *cli.Command) error {
-			i, err := isac.New(configPath, unanonymize, zones)
+			i, err := isac.New(configPath, zones)
 			if err != nil {
 				return cli.Exit(fmt.Sprintf("%v", err), exitCodeNG)
 			}

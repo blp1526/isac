@@ -4,28 +4,25 @@ import "testing"
 
 func TestServerString(t *testing.T) {
 	tests := []struct {
-		unanonymize bool
-		status      string
-		zoneName    string
-		id          string
-		name        string
-		want        string
+		status   string
+		zoneName string
+		id       string
+		name     string
+		want     string
 	}{
 		{
-			unanonymize: true,
-			id:          "1129XXXXXXXX",
-			name:        "foo",
-			status:      "down",
-			zoneName:    "is1a",
-			want:        "is1a 1129XXXXXXXX   down foo",
+			id:       "1129XXXXXXXX",
+			name:     "foo",
+			status:   "down",
+			zoneName: "is1a",
+			want:     "is1a 1129XXXXXXXX   down foo",
 		},
 		{
-			unanonymize: false,
-			id:          "1129XXXXXXXX",
-			name:        "foo",
-			status:      "down",
-			zoneName:    "is1a",
-			want:        "is1a ************   down foo",
+			id:       "2230YYYYYYYY",
+			name:     "bar",
+			status:   "up",
+			zoneName: "tk1a",
+			want:     "tk1a 2230YYYYYYYY     up bar",
 		},
 	}
 
@@ -36,9 +33,9 @@ func TestServerString(t *testing.T) {
 		s.Instance.Status = tt.status
 		s.Zone.Name = tt.zoneName
 
-		got := s.String(tt.unanonymize)
+		got := s.String()
 		if got != tt.want {
-			t.Errorf("tt.unanonymize: %v, got: %v, tt.want: %v", tt.unanonymize, got, tt.want)
+			t.Errorf("got: %v, want: %v", got, tt.want)
 		}
 	}
 
